@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Conversa | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         CABEÇALHO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+
+            💬 Conversa
+
+        </h2>
+
+        <p>
+
+            Comunicação direta com
+            {{ contato['nome'] }}.
+
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         CONTATO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    {% if contato['tipo'] == 'professor' %}
+
+                        👨‍🏫
+
+                    {% elif contato['tipo'] == 'aluno' %}
+
+                        🎓
+
+                    {% elif contato['tipo'] == 'gestao' %}
+
+                        🏫
+
+                    {% else %}
+
+                        👤
+
+                    {% endif %}
+
+                    {{ contato['nome'] }}
+
+                </h3>
+
+
+                <p>
+
+                    📧 {{ contato['email'] }}
+
+                </p>
+
+            </div>
+
+
+            <span class="badge">
+
+                {% if contato['tipo'] == 'professor' %}
+
+                    Professor
+
+                {% elif contato['tipo'] == 'aluno' %}
+
+                    Aluno
+
+                {% elif contato['tipo'] == 'gestao' %}
+
+                    Gestão
+
+                {% endif %}
+
+            </span>
+
+
+        </div>
+
+
+        <!-- =========================================
+             MENSAGENS
+        ========================================== -->
+
+        <div
+            class="mensagens-container"
+            style="
+                max-height: 500px;
+                overflow-y: auto;
+                padding: 20px;
+            "
+        >
+
+
+            {% if mensagens %}
+
+
+                {% for mensagem in mensagens %}
+
+
+                    {% if mensagem['remetente_id'] == usuario_id %}
+
+
+                        <!-- MENSAGEM ENVIADA -->
+
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: flex-end;
+                                margin-bottom: 15px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    max-width: 70%;
+                                    padding: 12px 16px;
+                                    border-radius: 15px;
+                                    background: #2563eb;
+                                    color: white;
+                                "
+                            >
+
+                                <strong>
+
+                                    Você
+
+                                </strong>
+
+
+                                <p style="margin: 6px 0;">
+
+                                    {{ mensagem['mensagem'] }}
+
+                                </p>
+
+
+                                <small>
+
+                                    {{ mensagem['data'] }}
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                    {% else %}
+
+
+                        <!-- MENSAGEM RECEBIDA -->
+
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: flex-start;
+                                margin-bottom: 15px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    max-width: 70%;
+                                    padding: 12px 16px;
+                                    border-radius: 15px;
+                                    background: #f1f5f9;
+                                    color: #1e293b;
+                                "
+                            >
+
+                                <strong>
+
+                                    {{ mensagem['remetente_nome'] }}
+
+                                </strong>
+
+
+                                <p style="margin: 6px 0;">
+
+                                    {{ mensagem['mensagem'] }}
+
+                                </p>
+
+
+                                <small>
+
+                                    {{ mensagem['data'] }}
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                    {% endif %}
+
+
+                {% endfor %}
+
+
+            {% else %}
+
+
+                <div class="empty-message">
+
+
+                    <div class="empty-icon">
+
+                        💬
+
+                    </div>
+
+
+                    <strong>
+
+                        Nenhuma mensagem ainda
+
+                    </strong>
+
+
+                    <span>
+
+                        Envie a primeira mensagem para
+                        iniciar a conversa.
+
+                    </span>
+
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- =========================================
+             ENVIAR MENSAGEM
+        ========================================== -->
+
+        <form
+            method="POST"
+            style="margin-top: 20px;"
+        >
+
+
+            <div class="form-group">
+
+
+                <label for="mensagem">
+
+                    Nova mensagem
+
+                </label>
+
+
+                <textarea
+                    id="mensagem"
+                    name="mensagem"
+                    rows="4"
+                    placeholder="Digite sua mensagem..."
+                    required
+                ></textarea>
+
+
+            </div>
+
+
+            <div class="form-buttons">
+
+
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="btn-secondary"
+                >
+
+                    ← Voltar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    📤 Enviar mensagem
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

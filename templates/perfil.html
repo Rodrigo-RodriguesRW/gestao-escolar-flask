@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Meu Perfil | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            👤 Meu Perfil
+
+        </h2>
+
+
+        <p>
+
+            Consulte e atualize seus dados pessoais
+            no sistema escolar.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         INFORMAÇÕES PESSOAIS
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    👤 Informações pessoais
+
+                </h3>
+
+
+                <p>
+
+                    Mantenha seus dados atualizados.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- NOME / E-MAIL -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="nome">
+
+                        Nome completo
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        value="{{ usuario['nome'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="email">
+
+                        E-mail
+
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ usuario['email'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- TELEFONE / TIPO -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="telefone">
+
+                        Telefone
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="telefone"
+                        name="telefone"
+                        value="{{ usuario['telefone'] or '' }}"
+                        placeholder="(87) 99999-9999"
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Tipo de usuário
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{% if usuario['tipo'] == 'gestao' %}Gestão{% elif usuario['tipo'] == 'professor' %}Professor{% elif usuario['tipo'] == 'aluno' %}Aluno{% else %}Usuário{% endif %}"
+                        disabled
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- TURMA DO ALUNO -->
+
+            {% if usuario['tipo'] == 'aluno' %}
+
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+
+                        <label>
+
+                            🎓 Minha turma
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            value="{{ usuario['turma'] or 'Nenhuma turma vinculada' }}"
+                            disabled
+                        >
+
+
+                    </div>
+
+
+                </div>
+
+
+            {% endif %}
+
+
+
+            <!-- BOTÕES -->
+
+            <div class="form-buttons">
+
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="btn-secondary"
+                >
+
+                    Cancelar
+
+                </a>
+
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    💾 Salvar alterações
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         STATUS DA CONTA
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🛡️ Segurança da conta
+
+                </h3>
+
+
+                <p>
+
+                    Informações relacionadas ao acesso
+                    ao sistema.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔐
+
+            </div>
+
+
+            <strong>
+
+                Sua conta está ativa
+
+            </strong>
+
+
+            <span>
+
+                A alteração de senha será adicionada
+                em uma próxima etapa do sistema.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         PRIVACIDADE
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🔒 Privacidade
+
+                </h3>
+
+
+                <p>
+
+                    Seus dados pessoais devem ser tratados
+                    com segurança e responsabilidade.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🛡️
+
+            </div>
+
+
+            <strong>
+
+                Proteção de dados
+
+            </strong>
+
+
+            <span>
+
+                Recursos relacionados à privacidade,
+                consentimento e proteção de dados serão
+                implementados no módulo final do projeto.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>

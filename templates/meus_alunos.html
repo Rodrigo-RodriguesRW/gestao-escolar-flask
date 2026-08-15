@@ -1,0 +1,625 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Meus Alunos | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            🎓 Meus Alunos
+
+        </h2>
+
+
+        <p>
+
+            Consulte os alunos vinculados
+            à sua turma.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         RESUMO
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <!-- PROFESSOR -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                👨‍🏫
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Professor
+
+                </span>
+
+
+                <strong>
+
+                    {{ professor['nome'] }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- TURMA -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                🏫
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Minha turma
+
+                </span>
+
+
+                <strong>
+
+                    {{ turma_nome or 'Não definida' }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ALUNOS -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                🎓
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Total de alunos
+
+                </span>
+
+
+                <strong>
+
+                    {{ alunos|length }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- STATUS -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                📚
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Situação
+
+                </span>
+
+
+                <strong>
+
+                    {% if alunos %}
+
+                        Ativa
+
+                    {% else %}
+
+                        Sem alunos
+
+                    {% endif %}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÕES DA TURMA
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🏫 Minha turma
+
+                </h3>
+
+
+                <p>
+
+                    Informações sobre a turma
+                    vinculada ao seu perfil.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        {% if turma_nome %}
+
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Turma
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ turma_nome }}"
+                        disabled
+                    >
+
+
+                </div>
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Professor responsável
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ professor['nome'] }}"
+                        disabled
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🏫
+
+                </div>
+
+
+                <strong>
+
+                    Nenhuma turma vinculada
+
+                </strong>
+
+
+                <span>
+
+                    Seu usuário ainda não possui
+                    uma turma vinculada pela Gestão Escolar.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         LISTA DE ALUNOS
+    ========================================== -->
+
+    <section class="content-card users-list">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    👨‍🎓 Alunos vinculados
+
+                </h3>
+
+
+                <p>
+
+                    Lista dos alunos pertencentes
+                    à sua turma.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ alunos|length }} aluno(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if alunos %}
+
+
+            <div class="table-container">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+
+                            <th>
+
+                                Nome
+
+                            </th>
+
+
+                            <th>
+
+                                E-mail
+
+                            </th>
+
+
+                            <th>
+
+                                Telefone
+
+                            </th>
+
+
+                            <th>
+
+                                Turma
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for aluno in alunos %}
+
+
+                            <tr>
+
+
+                                <td>
+
+
+                                    <strong>
+
+                                        {{ aluno['nome'] }}
+
+                                    </strong>
+
+
+                                </td>
+
+
+
+                                <td>
+
+                                    {{ aluno['email'] }}
+
+                                </td>
+
+
+
+                                <td>
+
+                                    {{ aluno['telefone'] or '-' }}
+
+                                </td>
+
+
+
+                                <td>
+
+
+                                    <span class="badge">
+
+                                        {{ aluno['turma'] or '-' }}
+
+                                    </span>
+
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🎓
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aluno encontrado
+
+                </strong>
+
+
+                <span>
+
+                    Não existem alunos vinculados
+                    à sua turma no momento.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         AÇÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('professor') }}"
+                class="btn-secondary"
+            >
+
+                ← Voltar ao painel
+
+            </a>
+
+
+            <a
+                href="{{ url_for('perfil') }}"
+                class="btn-login"
+            >
+
+                👤 Meu perfil
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔐
+
+            </div>
+
+
+            <strong>
+
+                Acesso restrito
+
+            </strong>
+
+
+            <span>
+
+                Esta área apresenta somente os alunos
+                vinculados à turma do professor conectado.
+                Cada professor visualiza apenas seus
+                próprios alunos.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,933 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Painel do Aluno | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+
+            Olá, {{ aluno['nome'] }}! 👋
+
+        </h2>
+
+
+        <p>
+
+            Bem-vindo ao seu painel da Gestão Escolar.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         CARDS DE RESUMO
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <!-- TURMA -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                🎓
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Minha turma
+
+                </span>
+
+
+                <strong>
+
+                    {{ aluno['turma'] or 'Não definida' }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- CURSO -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                📚
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Curso
+
+                </span>
+
+
+                <strong>
+
+                    {% if turma %}
+
+                        {{ turma['curso'] }}
+
+                    {% else %}
+
+                        Não informado
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- COLEGAS -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                👥
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Alunos da turma
+
+                </span>
+
+
+                <strong>
+
+                    {{ total_alunos }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- AVISOS -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                📢
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Avisos
+
+                </span>
+
+
+                <strong>
+
+                    {{ avisos|length }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         ACESSO RÁPIDO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    ⚡ Acesso rápido
+
+                </h3>
+
+
+                <p>
+
+                    Acesse rapidamente as principais
+                    áreas do seu painel.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="quick-actions">
+
+
+            <!-- COMUNICAÇÃO -->
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    💬
+
+                </span>
+
+
+                <strong>
+
+                    Comunicação
+
+                </strong>
+
+
+                <small>
+
+                    Conversar com seus professores
+
+                </small>
+
+            </a>
+
+
+
+            <!-- PERFIL -->
+
+            <a
+                href="{{ url_for('perfil') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    👤
+
+                </span>
+
+
+                <strong>
+
+                    Meu Perfil
+
+                </strong>
+
+
+                <small>
+
+                    Atualizar meus dados
+
+                </small>
+
+            </a>
+
+
+
+            <!-- AVISOS -->
+
+            <a
+                href="#avisos"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    📢
+
+                </span>
+
+
+                <strong>
+
+                    Avisos
+
+                </strong>
+
+
+                <small>
+
+                    Ver comunicados da escola
+
+                </small>
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         MINHA TURMA
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    🎓 Minha turma
+
+                </h3>
+
+
+                <p>
+
+                    Informações da turma vinculada
+                    ao seu cadastro.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        {% if turma %}
+
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Turma
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ turma['nome'] }}"
+                        disabled
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Ano letivo
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ turma['ano'] }}"
+                        disabled
+                    >
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Turno
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ turma['turno'] }}"
+                        disabled
+                    >
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Curso
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="{{ turma['curso'] }}"
+                        disabled
+                    >
+
+                </div>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🏫
+
+                </div>
+
+
+                <strong>
+
+                    Nenhuma turma vinculada
+
+                </strong>
+
+
+                <span>
+
+                    Sua conta ainda não está vinculada
+                    a uma turma. Procure a Gestão Escolar
+                    para atualizar seu cadastro.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         AVISOS DA ESCOLA
+    ========================================== -->
+
+    <section
+        class="content-card"
+        id="avisos"
+    >
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    📢 Avisos da escola
+
+                </h3>
+
+
+                <p>
+
+                    Acompanhe os comunicados publicados
+                    pela Gestão Escolar.
+
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ avisos|length }} aviso(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if avisos %}
+
+
+            <div class="avisos-container">
+
+
+                {% for aviso in avisos %}
+
+
+                    <div class="aviso-card">
+
+
+                        <div class="aviso-header">
+
+
+                            <div>
+
+                                <h4>
+
+                                    📢 {{ aviso['titulo'] }}
+
+                                </h4>
+
+
+                                <small>
+
+                                    📅 {{ aviso['data'] }}
+
+                                </small>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <div class="aviso-content">
+
+
+                            <p>
+
+                                {{ aviso['mensagem'] }}
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    📢
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aviso publicado
+
+                </strong>
+
+
+                <span>
+
+                    Quando a Gestão Escolar publicar
+                    um comunicado, ele aparecerá aqui.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         MEU PERFIL
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    👤 Meu perfil
+
+                </h3>
+
+
+                <p>
+
+                    Mantenha seus dados pessoais
+                    sempre atualizados.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Nome
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ aluno['nome'] }}"
+                    disabled
+                >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    E-mail
+
+                </label>
+
+
+                <input
+                    type="email"
+                    value="{{ aluno['email'] }}"
+                    disabled
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Telefone
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ aluno['telefone'] or 'Não informado' }}"
+                    disabled
+                >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Perfil
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="Aluno"
+                    disabled
+                >
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         COMUNICAÇÃO ESCOLAR
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    💬 Comunicação Escolar
+
+                </h3>
+
+
+                <p>
+
+                    Converse diretamente com os
+                    professores da sua turma.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                💬
+
+            </div>
+
+
+            <strong>
+
+                Comunicação disponível
+
+            </strong>
+
+
+            <span>
+
+                Você pode iniciar uma conversa
+                com os professores da sua turma.
+
+            </span>
+
+
+            <br>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-login"
+            >
+
+                💬 Abrir comunicação
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         BOTÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-login"
+            >
+
+                💬 Conversar com professor
+
+            </a>
+
+
+            <a
+                href="{{ url_for('perfil') }}"
+                class="btn-secondary"
+            >
+
+                👤 Meu perfil
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔐
+
+            </div>
+
+
+            <strong>
+
+                Seus dados são de acesso restrito
+
+            </strong>
+
+
+            <span>
+
+                Você visualiza somente as informações
+                relacionadas ao seu próprio perfil e à
+                sua turma.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

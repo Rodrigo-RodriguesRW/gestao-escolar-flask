@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Comunicação | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+            💬 Comunicação Escolar
+        </h2>
+
+        <p>
+            Entre em contato com professores,
+            alunos e equipe da Gestão Escolar.
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         CONTATOS
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+                    👥 Contatos disponíveis
+                </h3>
+
+                <p>
+                    Selecione uma pessoa para iniciar
+                    ou continuar uma conversa.
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ contatos|length }} contato(s)
+
+            </span>
+
+        </div>
+
+
+
+        {% if contatos %}
+
+
+            <div class="table-container">
+
+                <table>
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Nome
+                            </th>
+
+                            <th>
+                                Tipo
+                            </th>
+
+                            <th>
+                                E-mail
+                            </th>
+
+                            <th>
+                                Turma
+                            </th>
+
+                            <th>
+                                Ação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for contato in contatos %}
+
+
+                        <tr>
+
+
+                            <!-- NOME -->
+
+                            <td>
+
+                                <strong>
+
+
+                                    {% if contato['tipo'] == 'professor' %}
+
+                                        👨‍🏫
+
+                                    {% elif contato['tipo'] == 'aluno' %}
+
+                                        🎓
+
+                                    {% elif contato['tipo'] == 'gestao' %}
+
+                                        🏫
+
+                                    {% else %}
+
+                                        👤
+
+                                    {% endif %}
+
+
+                                    {{ contato['nome'] }}
+
+
+                                </strong>
+
+
+                                <!-- MENSAGEM NÃO LIDA -->
+
+                                {% if contato['nao_lidas'] is defined and contato['nao_lidas'] > 0 %}
+
+                                    <span class="badge">
+
+                                        🔴 {{ contato['nao_lidas'] }}
+                                        nova(s)
+
+                                    </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+
+                            <!-- TIPO -->
+
+                            <td>
+
+                                <span class="badge">
+
+
+                                    {% if contato['tipo'] == 'professor' %}
+
+                                        Professor
+
+                                    {% elif contato['tipo'] == 'aluno' %}
+
+                                        Aluno
+
+                                    {% elif contato['tipo'] == 'gestao' %}
+
+                                        Gestão
+
+                                    {% else %}
+
+                                        {{ contato['tipo'] }}
+
+                                    {% endif %}
+
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- EMAIL -->
+
+                            <td>
+
+                                {{ contato['email'] }}
+
+                            </td>
+
+
+
+                            <!-- TURMA -->
+
+                            <td>
+
+                                {{ contato['turma'] or '-' }}
+
+                            </td>
+
+
+
+                            <!-- AÇÃO -->
+
+                            <td>
+
+                                <a
+                                    href="{{ url_for('conversa', contato_id=contato['id']) }}"
+                                    class="btn-login"
+                                >
+
+                                    💬 Conversar
+
+                                </a>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+                    💬
+                </div>
+
+
+                <strong>
+                    Nenhum contato disponível
+                </strong>
+
+
+                <span>
+
+                    Não existem usuários disponíveis
+                    para comunicação no momento.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+                🔒
+            </div>
+
+
+            <strong>
+                Comunicação segura
+            </strong>
+
+
+            <span>
+
+                As mensagens são enviadas diretamente
+                entre os usuários do sistema.
+
+                <br><br>
+
+                🔴 Mensagens novas aparecerão
+                identificadas ao lado do contato.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

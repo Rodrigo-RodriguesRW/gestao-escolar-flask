@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Editar Usuário | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            ✏️ Editar Usuário
+
+        </h2>
+
+
+        <p>
+
+            Atualize as informações do usuário
+            selecionado.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         MENSAGENS DO SISTEMA
+    ========================================== -->
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+        {% if mensagens %}
+
+            <div class="flash-messages">
+
+                {% for categoria, mensagem in mensagens %}
+
+                    <div class="flash-message {{ categoria }}">
+
+                        {% if categoria == "success" %}
+
+                            ✅
+
+                        {% elif categoria == "danger" %}
+
+                            ❌
+
+                        {% elif categoria == "warning" %}
+
+                            ⚠️
+
+                        {% else %}
+
+                            ℹ️
+
+                        {% endif %}
+
+
+                        <span>
+
+                            {{ mensagem }}
+
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+    <!-- =========================================
+         FORMULÁRIO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    👤 Informações do usuário
+
+                </h3>
+
+
+                <p>
+
+                    Altere os dados necessários e
+                    salve as modificações.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- NOME / E-MAIL -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="nome">
+
+                        Nome completo
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        value="{{ usuario['nome'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="email">
+
+                        E-mail
+
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ usuario['email'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- TIPO / TELEFONE -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="tipo">
+
+                        Tipo de usuário
+
+                    </label>
+
+
+                    <select
+                        id="tipo"
+                        name="tipo"
+                        required
+                    >
+
+
+                        <option
+                            value="gestao"
+                            {% if usuario['tipo'] == 'gestao' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Gestão
+
+                        </option>
+
+
+                        <option
+                            value="professor"
+                            {% if usuario['tipo'] == 'professor' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Professor
+
+                        </option>
+
+
+                        <option
+                            value="aluno"
+                            {% if usuario['tipo'] == 'aluno' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Aluno
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="telefone">
+
+                        Telefone
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="telefone"
+                        name="telefone"
+                        value="{{ usuario['telefone'] or '' }}"
+                        placeholder="(87) 99999-9999"
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- TURMA / SENHA -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="turma">
+
+                        Turma
+
+                    </label>
+
+
+                    <select
+                        id="turma"
+                        name="turma"
+                    >
+
+
+                        <option value="">
+
+                            Nenhuma turma
+
+                        </option>
+
+
+                        {% for turma in turmas %}
+
+
+                            <option
+                                value="{{ turma['nome'] }}"
+                                {% if usuario['turma'] == turma['nome'] %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ turma['nome'] }}
+
+                                -
+
+                                {{ turma['curso'] }}
+
+                            </option>
+
+
+                        {% endfor %}
+
+
+                    </select>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label>
+
+                        Senha
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        value="Senha atual protegida"
+                        disabled
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- BOTÕES -->
+
+            <div class="form-buttons">
+
+
+                <a
+                    href="{{ url_for('usuarios_page') }}"
+                    class="btn-secondary"
+                >
+
+                    ← Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    💾 Salvar alterações
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         SEGURANÇA
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔐
+
+            </div>
+
+
+            <strong>
+
+                Segurança da conta
+
+            </strong>
+
+
+            <span>
+
+                A senha do usuário não é alterada
+                nesta tela. O acesso continua utilizando
+                a senha cadastrada no sistema.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

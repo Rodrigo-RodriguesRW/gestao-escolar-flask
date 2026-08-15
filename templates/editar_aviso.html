@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Editar Aviso | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            ✏️ Editar Aviso
+
+        </h2>
+
+
+        <p>
+
+            Atualize o comunicado selecionado
+            antes de publicá-lo novamente.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         MENSAGENS
+    ========================================== -->
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+        {% if mensagens %}
+
+            <div class="flash-messages">
+
+                {% for categoria, mensagem in mensagens %}
+
+                    <div class="flash-message {{ categoria }}">
+
+                        {% if categoria == "success" %}
+
+                            ✅
+
+                        {% elif categoria == "danger" %}
+
+                            ❌
+
+                        {% elif categoria == "warning" %}
+
+                            ⚠️
+
+                        {% else %}
+
+                            ℹ️
+
+                        {% endif %}
+
+
+                        <span>
+
+                            {{ mensagem }}
+
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+    <!-- =========================================
+         FORMULÁRIO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    📢 Informações do aviso
+
+                </h3>
+
+
+                <p>
+
+                    Faça as alterações necessárias
+                    e salve o comunicado.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                📅 {{ aviso['data'] }}
+
+            </span>
+
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- TÍTULO -->
+
+            <div class="form-group">
+
+
+                <label for="titulo">
+
+                    Título do aviso
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    value="{{ aviso['titulo'] }}"
+                    required
+                >
+
+
+            </div>
+
+
+
+            <!-- MENSAGEM -->
+
+            <div class="form-group">
+
+
+                <label for="mensagem">
+
+                    Mensagem
+
+                </label>
+
+
+                <textarea
+                    id="mensagem"
+                    name="mensagem"
+                    rows="8"
+                    required
+                >{{ aviso['mensagem'] }}</textarea>
+
+
+            </div>
+
+
+
+            <!-- BOTÕES -->
+
+            <div class="form-buttons">
+
+
+                <a
+                    href="{{ url_for('avisos_page') }}"
+                    class="btn-secondary"
+                >
+
+                    ← Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    💾 Salvar alterações
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         PRÉ-VISUALIZAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    👁️ Pré-visualização
+
+                </h3>
+
+
+                <p>
+
+                    Visualização aproximada de como
+                    o aviso aparece para os usuários.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="aviso-card">
+
+
+            <div class="aviso-header">
+
+
+                <div>
+
+
+                    <h4>
+
+                        📢 {{ aviso['titulo'] }}
+
+                    </h4>
+
+
+                    <small>
+
+                        📅 {{ aviso['data'] }}
+
+                    </small>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="aviso-content">
+
+
+                <p>
+
+                    {{ aviso['mensagem'] }}
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                📣
+
+            </div>
+
+
+            <strong>
+
+                Comunicação atualizada
+
+            </strong>
+
+
+            <span>
+
+                Após salvar, o aviso atualizado
+                ficará disponível para os usuários
+                que possuem acesso aos comunicados
+                da escola.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

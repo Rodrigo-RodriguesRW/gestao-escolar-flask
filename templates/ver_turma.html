@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Visualizar Turma | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            🏫 {{ turma['nome'] }}
+
+        </h2>
+
+
+        <p>
+
+            Visualização dos dados e alunos
+            vinculados a esta turma.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         INFORMAÇÕES DA TURMA
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <!-- ANO -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                📅
+
+            </div>
+
+
+            <div>
+
+
+                <span>
+
+                    Ano letivo
+
+                </span>
+
+
+                <strong>
+
+                    {{ turma['ano'] }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- TURNO -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                🕐
+
+            </div>
+
+
+            <div>
+
+
+                <span>
+
+                    Turno
+
+                </span>
+
+
+                <strong>
+
+                    {{ turma['turno'] }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- CURSO -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                📚
+
+            </div>
+
+
+            <div>
+
+
+                <span>
+
+                    Curso
+
+                </span>
+
+
+                <strong>
+
+                    {{ turma['curso'] }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ALUNOS -->
+
+        <div class="dashboard-card">
+
+
+            <div class="dashboard-card-icon">
+
+                🎓
+
+            </div>
+
+
+            <div>
+
+
+                <span>
+
+                    Total de alunos
+
+                </span>
+
+
+                <strong>
+
+                    {{ alunos|length }}
+
+                </strong>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         DADOS DA TURMA
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    📋 Informações da turma
+
+                </h3>
+
+
+                <p>
+
+                    Dados cadastrais da turma.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ alunos|length }} aluno(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Nome da turma
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ turma['nome'] }}"
+                    disabled
+                >
+
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Ano letivo
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ turma['ano'] }}"
+                    disabled
+                >
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Turno
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ turma['turno'] }}"
+                    disabled
+                >
+
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label>
+
+                    Curso
+
+                </label>
+
+
+                <input
+                    type="text"
+                    value="{{ turma['curso'] }}"
+                    disabled
+                >
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         ALUNOS DA TURMA
+    ========================================== -->
+
+    <section class="content-card users-list">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🎓 Alunos da turma
+
+                </h3>
+
+
+                <p>
+
+                    Alunos atualmente vinculados
+                    a esta turma.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ alunos|length }} aluno(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if alunos %}
+
+
+            <div class="table-container">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+
+                            <th>
+
+                                Nome
+
+                            </th>
+
+
+                            <th>
+
+                                E-mail
+
+                            </th>
+
+
+                            <th>
+
+                                Telefone
+
+                            </th>
+
+
+                            <th>
+
+                                Turma
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for aluno in alunos %}
+
+
+                            <tr>
+
+
+                                <td>
+
+
+                                    <strong>
+
+                                        {{ aluno['nome'] }}
+
+                                    </strong>
+
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ aluno['email'] }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ aluno['telefone'] or '-' }}
+
+                                </td>
+
+
+                                <td>
+
+
+                                    <span class="badge">
+
+                                        {{ aluno['turma'] }}
+
+                                    </span>
+
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🎓
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aluno vinculado
+
+                </strong>
+
+
+                <span>
+
+                    Ainda não existem alunos
+                    vinculados a esta turma.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         AÇÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('turmas_page') }}"
+                class="btn-secondary"
+            >
+
+                ← Voltar para turmas
+
+            </a>
+
+
+            <a
+                href="{{ url_for('editar_turma', id=turma['id']) }}"
+                class="btn-login"
+            >
+
+                ✏️ Editar turma
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔗
+
+            </div>
+
+
+            <strong>
+
+                Vínculo dos alunos
+
+            </strong>
+
+
+            <span>
+
+                Os alunos exibidos nesta tela são
+                aqueles vinculados à turma através
+                do gerenciamento de usuários.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Avisos | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            📢 Avisos da Escola
+
+        </h2>
+
+
+        <p>
+
+            Publique comunicados e informações
+            importantes para a comunidade escolar.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         PUBLICAR AVISO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    ➕ Publicar novo aviso
+
+                </h3>
+
+
+                <p>
+
+                    Crie um comunicado para informar
+                    professores e alunos.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                📢 Gestão
+
+            </span>
+
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- TÍTULO -->
+
+            <div class="form-group">
+
+
+                <label for="titulo">
+
+                    Título do aviso
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    placeholder="Ex.: Reunião de pais e responsáveis"
+                    maxlength="150"
+                    required
+                >
+
+
+            </div>
+
+
+
+            <!-- MENSAGEM -->
+
+            <div class="form-group">
+
+
+                <label for="mensagem">
+
+                    Mensagem
+
+                </label>
+
+
+                <textarea
+                    id="mensagem"
+                    name="mensagem"
+                    rows="6"
+                    placeholder="Digite aqui o comunicado..."
+                    required
+                ></textarea>
+
+
+            </div>
+
+
+
+            <!-- BOTÃO -->
+
+            <div class="form-buttons">
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    📢 Publicar aviso
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         AVISOS PUBLICADOS
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    📋 Avisos publicados
+
+                </h3>
+
+
+                <p>
+
+                    Comunicados disponíveis para
+                    professores e alunos.
+
+                </p>
+
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ avisos|length }} aviso(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if avisos %}
+
+
+            <div class="avisos-container">
+
+
+                {% for aviso in avisos %}
+
+
+                    <div class="aviso-card">
+
+
+                        <!-- =================================
+                             CABEÇALHO DO AVISO
+                        ================================== -->
+
+                        <div class="aviso-header">
+
+
+                            <div>
+
+
+                                <h4>
+
+                                    📢 {{ aviso['titulo'] }}
+
+                                </h4>
+
+
+                                <small>
+
+                                    📅 Publicado em
+                                    {{ aviso['data'] }}
+
+                                </small>
+
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <!-- =================================
+                             MENSAGEM
+                        ================================== -->
+
+                        <div class="aviso-content">
+
+
+                            <p>
+
+                                {{ aviso['mensagem'] }}
+
+                            </p>
+
+
+                        </div>
+
+
+
+                        <!-- =================================
+                             AÇÕES
+                        ================================== -->
+
+                        <div class="table-actions">
+
+
+                            <a
+                                href="{{ url_for('editar_aviso', id=aviso['id']) }}"
+                                class="btn-edit"
+                            >
+
+                                ✏️ Editar
+
+                            </a>
+
+
+                            <a
+                                href="{{ url_for('excluir_aviso', id=aviso['id']) }}"
+                                class="btn-delete"
+                                onclick="return confirm('Tem certeza que deseja excluir este aviso?');"
+                            >
+
+                                🗑️ Excluir
+
+                            </a>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- =================================
+                 SEM AVISOS
+            ================================== -->
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    📢
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aviso publicado
+
+                </strong>
+
+
+                <span>
+
+                    Publique o primeiro comunicado
+                    utilizando o formulário acima.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         FLUXO DE COMUNICAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🔄 Como funciona
+
+                </h3>
+
+
+                <p>
+
+                    Os avisos são compartilhados
+                    automaticamente pelo sistema.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="dashboard-cards">
+
+
+            <!-- GESTÃO -->
+
+            <div class="dashboard-card">
+
+
+                <div class="dashboard-card-icon">
+
+                    👨‍💼
+
+                </div>
+
+
+                <div>
+
+
+                    <span>
+
+                        Gestão
+
+                    </span>
+
+
+                    <strong>
+
+                        Publica
+
+                    </strong>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PROFESSOR -->
+
+            <div class="dashboard-card">
+
+
+                <div class="dashboard-card-icon">
+
+                    👨‍🏫
+
+                </div>
+
+
+                <div>
+
+
+                    <span>
+
+                        Professor
+
+                    </span>
+
+
+                    <strong>
+
+                        Visualiza
+
+                    </strong>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- ALUNO -->
+
+            <div class="dashboard-card">
+
+
+                <div class="dashboard-card-icon">
+
+                    🎓
+
+                </div>
+
+
+                <div>
+
+
+                    <span>
+
+                        Aluno
+
+                    </span>
+
+
+                    <strong>
+
+                        Visualiza
+
+                    </strong>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🔐
+
+            </div>
+
+
+            <strong>
+
+                Controle da Gestão Escolar
+
+            </strong>
+
+
+            <span>
+
+                Somente usuários com perfil de Gestão
+                podem criar, editar ou excluir avisos.
+                Professores e alunos possuem acesso
+                somente à visualização.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

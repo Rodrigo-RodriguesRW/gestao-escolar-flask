@@ -1,0 +1,1028 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Painel do Professor | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+
+            Olá, Professor {{ professor['nome'] }}! 👋
+
+        </h2>
+
+
+        <p>
+
+            Acompanhe suas turmas, alunos e
+            comunicados da escola.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         CARDS
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <!-- TURMAS -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                🏫
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Minhas turmas
+
+                </span>
+
+
+                <strong>
+
+                    {{ turmas|length }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ALUNOS -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                🎓
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Meus alunos
+
+                </span>
+
+
+                <strong>
+
+                    {{ total_alunos }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- AVISOS -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                📢
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Avisos
+
+                </span>
+
+
+                <strong>
+
+                    {{ avisos|length }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- COMUNICAÇÃO -->
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                💬
+
+            </div>
+
+
+            <div>
+
+                <span>
+
+                    Comunicação
+
+                </span>
+
+
+                <strong>
+
+                    Ativa
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         ACESSO RÁPIDO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    ⚡ Acesso rápido
+
+                </h3>
+
+
+                <p>
+
+                    Acesse rapidamente as principais
+                    áreas do seu painel.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="quick-actions">
+
+
+            <!-- MEUS ALUNOS -->
+
+            <a
+                href="{{ url_for('meus_alunos') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    🎓
+
+                </span>
+
+
+                <strong>
+
+                    Meus alunos
+
+                </strong>
+
+
+                <small>
+
+                    Visualizar alunos da minha turma
+
+                </small>
+
+            </a>
+
+
+
+            <!-- PERFIL -->
+
+            <a
+                href="{{ url_for('perfil') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    👤
+
+                </span>
+
+
+                <strong>
+
+                    Meu Perfil
+
+                </strong>
+
+
+                <small>
+
+                    Atualizar meus dados
+
+                </small>
+
+            </a>
+
+
+
+            <!-- AVISOS -->
+
+            <a
+                href="#avisos"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    📢
+
+                </span>
+
+
+                <strong>
+
+                    Avisos
+
+                </strong>
+
+
+                <small>
+
+                    Ver comunicados da escola
+
+                </small>
+
+            </a>
+
+
+
+            <!-- COMUNICAÇÃO -->
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    💬
+
+                </span>
+
+
+                <strong>
+
+                    Comunicação
+
+                </strong>
+
+
+                <small>
+
+                    Conversar com meus alunos
+
+                </small>
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         AVISOS
+    ========================================== -->
+
+    <section
+        class="content-card"
+        id="avisos"
+    >
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    📢 Avisos da escola
+
+                </h3>
+
+
+                <p>
+
+                    Confira os comunicados publicados
+                    pela Gestão Escolar.
+
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ avisos|length }} aviso(s)
+
+            </span>
+
+        </div>
+
+
+
+        {% if avisos %}
+
+
+            <div class="avisos-container">
+
+
+                {% for aviso in avisos %}
+
+
+                    <div class="aviso-card">
+
+
+                        <div class="aviso-header">
+
+
+                            <div>
+
+                                <h4>
+
+                                    📢 {{ aviso['titulo'] }}
+
+                                </h4>
+
+
+                                <small>
+
+                                    📅 {{ aviso['data'] }}
+
+                                </small>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <div class="aviso-content">
+
+                            <p>
+
+                                {{ aviso['mensagem'] }}
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    📢
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aviso publicado
+
+                </strong>
+
+
+                <span>
+
+                    Quando a Gestão publicar um aviso,
+                    ele aparecerá aqui.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         MINHAS TURMAS
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    🏫 Minhas turmas
+
+                </h3>
+
+
+                <p>
+
+                    Turmas vinculadas ao seu perfil.
+
+                </p>
+
+            </div>
+
+
+            {% if turmas %}
+
+                <span class="total-badge">
+
+                    {{ turmas|length }} turma(s)
+
+                </span>
+
+            {% endif %}
+
+
+        </div>
+
+
+
+        {% if turmas %}
+
+
+            <div class="table-container">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+                            <th>
+
+                                Turma
+
+                            </th>
+
+
+                            <th>
+
+                                Ano
+
+                            </th>
+
+
+                            <th>
+
+                                Turno
+
+                            </th>
+
+
+                            <th>
+
+                                Curso
+
+                            </th>
+
+
+                            <th>
+
+                                Alunos
+
+                            </th>
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for turma in turmas %}
+
+
+                            <tr>
+
+
+                                <td>
+
+                                    <strong>
+
+                                        {{ turma['nome'] }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ turma['ano'] }}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="badge">
+
+                                        {{ turma['turno'] }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ turma['curso'] }}
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+
+                                        {{ turma['total_alunos'] }}
+
+                                    </strong>
+
+                                    aluno(s)
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🏫
+
+                </div>
+
+
+                <strong>
+
+                    Nenhuma turma vinculada
+
+                </strong>
+
+
+                <span>
+
+                    Você ainda não possui uma turma
+                    vinculada ao seu usuário.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         MEUS ALUNOS
+    ========================================== -->
+
+    <section class="content-card users-list">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    👨‍🎓 Meus alunos
+
+                </h3>
+
+
+                <p>
+
+                    Alunos atualmente vinculados
+                    à sua turma.
+
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ total_alunos }} aluno(s)
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if alunos %}
+
+
+            <div class="table-container">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+
+                            <th>
+
+                                Nome
+
+                            </th>
+
+
+                            <th>
+
+                                E-mail
+
+                            </th>
+
+
+                            <th>
+
+                                Telefone
+
+                            </th>
+
+
+                            <th>
+
+                                Turma
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for aluno in alunos %}
+
+
+                            <tr>
+
+
+                                <td>
+
+                                    <strong>
+
+                                        {{ aluno['nome'] }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ aluno['email'] }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ aluno['telefone'] or '-' }}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="badge">
+
+                                        {{ aluno['turma'] or '-' }}
+
+                                    </span>
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    🎓
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aluno encontrado
+
+                </strong>
+
+
+                <span>
+
+                    Ainda não existem alunos vinculados
+                    à sua turma.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         BOTÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('meus_alunos') }}"
+                class="btn-login"
+            >
+
+                🎓 Ver meus alunos
+
+            </a>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-login"
+            >
+
+                💬 Abrir comunicação
+
+            </a>
+
+
+            <a
+                href="{{ url_for('perfil') }}"
+                class="btn-secondary"
+            >
+
+                👤 Meu perfil
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         COMUNICAÇÃO ESCOLAR
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+                <h3>
+
+                    💬 Comunicação Escolar
+
+                </h3>
+
+
+                <p>
+
+                    Converse diretamente com os alunos
+                    da sua turma.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                💬
+
+            </div>
+
+
+            <strong>
+
+                Comunicação disponível
+
+            </strong>
+
+
+            <span>
+
+                Você já pode iniciar uma conversa
+                com seus alunos.
+
+            </span>
+
+
+            <br>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-login"
+            >
+
+                💬 Iniciar conversa
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
+

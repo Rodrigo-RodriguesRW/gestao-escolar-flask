@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="login-page">
+
+
+    <!-- =========================================
+         LADO ESQUERDO
+    ========================================== -->
+
+    <section class="welcome-section">
+
+
+        <!-- FAIXA COLORIDA -->
+
+        <div class="color-bar">
+
+            <span></span>
+
+            <span></span>
+
+            <span></span>
+
+            <span></span>
+
+        </div>
+
+
+
+        <!-- CONTEÚDO -->
+
+        <div class="welcome-content">
+
+
+            <div class="state-name">
+
+                GOVERNO DO ESTADO DE PERNAMBUCO
+
+            </div>
+
+
+
+            <h1>
+
+                Gestão<br>
+                Escolar
+
+            </h1>
+
+
+
+            <div class="line"></div>
+
+
+
+            <h2>
+
+                ETE Ariano Suassuna
+
+            </h2>
+
+
+
+            <p class="description">
+
+                Sistema de gestão e comunicação
+                da comunidade escolar.
+
+            </p>
+
+
+
+            <!-- =================================
+                 LOGO DA ETE
+            ================================== -->
+
+            <div class="ariano-placeholder">
+
+                <img
+                    src="{{ url_for('static', filename='logo ete garanhuns.png') }}"
+                    alt="Logo ETE Garanhuns"
+                >
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         LADO DIREITO
+    ========================================== -->
+
+    <section class="login-section">
+
+
+        <div class="login-card">
+
+
+            <h2>
+
+                Bem-vindo!
+
+            </h2>
+
+
+            <p class="login-subtitle">
+
+                Entre com suas credenciais
+                para acessar o sistema.
+
+            </p>
+
+
+
+            <!-- =================================
+                 MENSAGEM DE ERRO
+            ================================== -->
+
+            {% if erro %}
+
+                <div class="login-error">
+
+                    {{ erro }}
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- =================================
+                 LOGIN
+            ================================== -->
+
+            <form method="POST">
+
+
+                <div class="form-group">
+
+
+                    <label for="email">
+
+                        E-mail
+
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="senha">
+
+                        Senha
+
+                    </label>
+
+
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite sua senha"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="forgot-password">
+
+                    <a href="#">
+
+                        Esqueci minha senha
+
+                    </a>
+
+                </div>
+
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    Entrar no sistema
+
+                </button>
+
+
+            </form>
+
+
+
+            <!-- =================================
+                 RODAPÉ
+            ================================== -->
+
+            <div class="login-footer">
+
+
+                <p>
+
+                    ETE Ariano Suassuna
+
+                </p>
+
+
+                <span>
+
+                    Sistema de Gestão Escolar
+
+                </span>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,280 @@
+
+<header class="dashboard-header">
+
+
+    <!-- =========================================
+         IDENTIDADE DO SISTEMA
+    ========================================== -->
+
+    <div class="header-left">
+
+
+        <div class="header-logo">
+
+            ETE
+
+        </div>
+
+
+        <div>
+
+            <h1>
+
+                Gestão Escolar
+
+            </h1>
+
+
+            <span>
+
+                ETE Ariano Suassuna
+
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         USUÁRIO E NAVEGAÇÃO
+    ========================================== -->
+
+    <div class="header-user">
+
+
+        <!-- USUÁRIO LOGADO -->
+
+        <div class="logged-user">
+
+
+            <strong>
+
+                {{ usuario_nome }}
+
+            </strong>
+
+
+            <span>
+
+
+                {% if usuario_tipo == "gestao" %}
+
+                    Gestão
+
+
+                {% elif usuario_tipo == "professor" %}
+
+                    Professor
+
+
+                {% elif usuario_tipo == "aluno" %}
+
+                    Aluno
+
+
+                {% else %}
+
+                    Usuário
+
+                {% endif %}
+
+
+            </span>
+
+
+        </div>
+
+
+
+        <!-- =====================================
+             MENU DA GESTÃO
+        ====================================== -->
+
+        {% if usuario_tipo == "gestao" %}
+
+
+            <a href="{{ url_for('dashboard') }}">
+
+                🏠 Dashboard
+
+            </a>
+
+
+            <a href="{{ url_for('usuarios_page') }}">
+
+                👥 Usuários
+
+            </a>
+
+
+            <a href="{{ url_for('turmas_page') }}">
+
+                🏫 Turmas
+
+            </a>
+
+
+            <a href="{{ url_for('avisos_page') }}">
+
+                📢 Avisos
+
+            </a>
+
+
+        {% endif %}
+
+
+
+        <!-- =====================================
+             MENU DO PROFESSOR
+        ====================================== -->
+
+        {% if usuario_tipo == "professor" %}
+
+
+            <a href="{{ url_for('professor') }}">
+
+                🏠 Painel
+
+            </a>
+
+
+            <a href="{{ url_for('meus_alunos') }}">
+
+                🎓 Meus alunos
+
+            </a>
+
+
+        {% endif %}
+
+
+
+        <!-- =====================================
+             MENU DO ALUNO
+        ====================================== -->
+
+        {% if usuario_tipo == "aluno" %}
+
+
+            <a href="{{ url_for('aluno') }}">
+
+                🏠 Meu painel
+
+            </a>
+
+
+        {% endif %}
+
+
+
+        <!-- =====================================
+             PERFIL
+        ====================================== -->
+
+        <a href="{{ url_for('perfil') }}">
+
+            👤 Meu Perfil
+
+        </a>
+
+
+
+        <!-- =====================================
+             SAIR
+        ====================================== -->
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-button"
+        >
+
+            🚪 Sair
+
+        </a>
+
+
+    </div>
+
+
+</header>
+
+
+
+<!-- =========================================
+     MENSAGENS DO SISTEMA
+========================================= -->
+
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+
+
+    {% if mensagens %}
+
+
+        <div class="flash-container">
+
+
+            {% for categoria, mensagem in mensagens %}
+
+
+                <div class="flash-message {{ categoria }}">
+
+
+                    {% if categoria == "success" %}
+
+
+                        <span>
+
+                            ✅
+
+                        </span>
+
+
+                    {% elif categoria == "error" %}
+
+
+                        <span>
+
+                            ❌
+
+                        </span>
+
+
+                    {% else %}
+
+
+                        <span>
+
+                            ℹ️
+
+                        </span>
+
+
+                    {% endif %}
+
+
+
+                    <span>
+
+                        {{ mensagem }}
+
+                    </span>
+
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+    {% endif %}
+
+
+{% endwith %}
+

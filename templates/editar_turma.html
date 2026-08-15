@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Editar Turma | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+
+        <h2>
+
+            ✏️ Editar Turma
+
+        </h2>
+
+
+        <p>
+
+            Atualize as informações da turma
+            selecionada.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- =========================================
+         MENSAGENS DO SISTEMA
+    ========================================== -->
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+        {% if mensagens %}
+
+            <div class="flash-messages">
+
+                {% for categoria, mensagem in mensagens %}
+
+                    <div class="flash-message {{ categoria }}">
+
+                        {% if categoria == "success" %}
+
+                            ✅
+
+                        {% elif categoria == "danger" %}
+
+                            ❌
+
+                        {% elif categoria == "warning" %}
+
+                            ⚠️
+
+                        {% else %}
+
+                            ℹ️
+
+                        {% endif %}
+
+
+                        <span>
+
+                            {{ mensagem }}
+
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+    <!-- =========================================
+         FORMULÁRIO
+========================================= -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+
+            <div>
+
+
+                <h3>
+
+                    🏫 Informações da turma
+
+                </h3>
+
+
+                <p>
+
+                    Altere os dados necessários e
+                    salve as modificações.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- NOME / ANO -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="nome">
+
+                        Nome da turma
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        value="{{ turma['nome'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="ano">
+
+                        Ano letivo
+
+                    </label>
+
+
+                    <input
+                        type="number"
+                        id="ano"
+                        name="ano"
+                        value="{{ turma['ano'] }}"
+                        min="2020"
+                        max="2100"
+                        required
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- TURNO / CURSO -->
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+
+                    <label for="turno">
+
+                        Turno
+
+                    </label>
+
+
+                    <select
+                        id="turno"
+                        name="turno"
+                        required
+                    >
+
+
+                        <option
+                            value="Manhã"
+                            {% if turma['turno'] == 'Manhã' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Manhã
+
+                        </option>
+
+
+                        <option
+                            value="Tarde"
+                            {% if turma['turno'] == 'Tarde' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Tarde
+
+                        </option>
+
+
+                        <option
+                            value="Noite"
+                            {% if turma['turno'] == 'Noite' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Noite
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="curso">
+
+                        Curso
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="curso"
+                        name="curso"
+                        value="{{ turma['curso'] }}"
+                        required
+                    >
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- BOTÕES -->
+
+            <div class="form-buttons">
+
+
+                <a
+                    href="{{ url_for('turmas_page') }}"
+                    class="btn-secondary"
+                >
+
+                    ← Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    💾 Salvar alterações
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         INFORMAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="empty-message">
+
+
+            <div class="empty-icon">
+
+                🎓
+
+            </div>
+
+
+            <strong>
+
+                Alteração segura
+
+            </strong>
+
+
+            <span>
+
+                As alterações realizadas nesta tela
+                serão aplicadas à turma cadastrada
+                no sistema.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+
+</html>
