@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Criar Nova Senha | Gestão Escolar</title>
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+>
+```
+
+</head>
+
+<body>
+
+<div class="login-page">
+
+```
+<!-- =========================================
+     LADO ESQUERDO
+========================================== -->
+
+<section class="welcome-section">
+
+
+    <!-- FAIXA COLORIDA -->
+
+    <div class="color-bar">
+
+        <span></span>
+
+        <span></span>
+
+        <span></span>
+
+        <span></span>
+
+    </div>
+
+
+    <!-- CONTEÚDO -->
+
+    <div class="welcome-content">
+
+
+        <div class="state-name">
+
+            GOVERNO DO ESTADO DE PERNAMBUCO
+
+        </div>
+
+
+        <h1>
+
+            Gestão<br>
+            Escolar
+
+        </h1>
+
+
+        <div class="line"></div>
+
+
+        <h2>
+
+            ETE Ariano Suassuna
+
+        </h2>
+
+
+        <p class="description">
+
+            Sistema de gestão e comunicação
+            da comunidade escolar.
+
+        </p>
+
+
+        <!-- =================================
+             LOGO DA ETE
+        ================================== -->
+
+        <div class="ariano-placeholder">
+
+            <img
+                src="{{ url_for('static', filename='logo ete garanhuns.png') }}"
+                alt="Logo ETE Garanhuns"
+            >
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+
+<!-- =========================================
+     LADO DIREITO
+========================================== -->
+
+<section class="login-section">
+
+
+    <div class="login-card">
+
+
+        <h2>
+
+            Criar nova senha
+
+        </h2>
+
+
+        <p class="login-subtitle">
+
+            Olá, {{ usuario_nome }}!<br>
+            Por segurança, crie uma nova senha
+            para continuar.
+
+        </p>
+
+
+        <!-- =================================
+             MENSAGENS
+        ================================== -->
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+            {% if mensagens %}
+
+                {% for categoria, mensagem in mensagens %}
+
+                    <div class="login-error">
+
+                        {{ mensagem }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+
+        <!-- =================================
+             NOVA SENHA
+        ================================== -->
+
+        <form method="POST">
+
+
+            <div class="form-group">
+
+
+                <label for="nova_senha">
+
+                    Nova senha
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="nova_senha"
+                    name="nova_senha"
+                    placeholder="Digite sua nova senha"
+                    minlength="6"
+                    required
+                >
+
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label for="confirmar_senha">
+
+                    Confirmar nova senha
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="confirmar_senha"
+                    name="confirmar_senha"
+                    placeholder="Digite novamente sua senha"
+                    minlength="6"
+                    required
+                >
+
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn-login"
+            >
+
+                Criar minha senha
+
+            </button>
+
+
+        </form>
+
+
+
+        <!-- =================================
+             INFORMAÇÃO
+        ================================== -->
+
+        <div class="login-footer">
+
+
+            <p>
+
+                Primeiro acesso
+
+            </p>
+
+
+            <span>
+
+                Sua senha será utilizada nos próximos acessos.
+
+            </span>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+```
+
+</div>
+
+</body>
+
+</html>

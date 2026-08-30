@@ -1,11 +1,22 @@
-/* =========================================
+/* =========================================================
+   GESTÃO ESCOLAR - STYLE.CSS
+   Menu principal + páginas do sistema
+   Sem JavaScript
+========================================================= */
+
+
+/* =========================================================
    CONFIGURAÇÕES GERAIS
-========================================= */
+========================================================= */
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
@@ -19,115 +30,425 @@ a {
     text-decoration: none;
 }
 
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
 
-/* =========================================
-   CABEÇALHO DO SISTEMA
-========================================= */
 
-.dashboard-header {
-    min-height: 78px;
+/* =========================================================
+   TOPO PRINCIPAL
+========================================================= */
+
+.topo {
+    width: 100%;
+    min-height: 72px;
+
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 40px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #003b7a,
-            #005ca9
-        );
+    padding: 0 28px;
+
+    background: linear-gradient(
+        135deg,
+        #003b7a 0%,
+        #005ca9 55%,
+        #0072bc 100%
+    );
 
     color: white;
 
-    box-shadow:
-        0 4px 18px rgba(0, 59, 122, 0.18);
-}
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.header-logo {
-    width: 52px;
-    height: 52px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: white;
-    color: #003b7a;
-
-    border-radius: 12px;
-
-    font-weight: 800;
-    font-size: 17px;
+    position: relative;
+    z-index: 1000;
 
     box-shadow:
-        0 5px 15px rgba(0, 0, 0, 0.15);
+        0 4px 18px rgba(0, 59, 122, 0.20);
 }
 
-.header-left h1 {
+
+/* =========================================================
+   LOGO DO TOPO
+========================================================= */
+
+.topo-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
+}
+
+.logo-icone {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.logo-texto {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.logo-texto strong {
+    color: white;
+
     font-size: 21px;
-    margin-bottom: 3px;
+    font-weight: 800;
 }
 
-.header-left span {
-    font-size: 12px;
-    color: #dcecff;
+.logo-texto span {
+    color: white;
+
+    font-size: 18px;
+    font-weight: 500;
 }
 
-.header-user {
+
+/* =========================================================
+   MENU PRINCIPAL
+========================================================= */
+
+.menu-principal {
     display: flex;
     align-items: center;
-    gap: 18px;
+
+    gap: 6px;
+
+    margin-left: auto;
 }
 
-.header-user > a {
-    color: white;
-    font-size: 13px;
-    font-weight: bold;
 
-    padding: 9px 13px;
+/* =========================================================
+   ITENS DO MENU
+========================================================= */
+
+.menu-item {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 10px 11px;
 
     border-radius: 8px;
 
-    transition: 0.2s;
-}
+    color: white;
 
-.header-user > a:hover {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.logged-user {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.logged-user strong {
     font-size: 14px;
+    font-weight: 500;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
-.logged-user span {
-    font-size: 11px;
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.14);
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+.menu-item:visited {
+    color: white;
+}
+
+
+/* =========================================================
+   ITEM ATIVO
+========================================================= */
+
+.menu-item.active {
+    background: rgba(255, 255, 255, 0.20);
+
+    color: white;
+
+    box-shadow:
+        inset 0 -2px 0 white;
+}
+
+
+/* =========================================================
+   PESQUISA
+========================================================= */
+
+.menu-pesquisa {
+    display: flex;
+    align-items: center;
+
+    width: 170px;
+    height: 38px;
+
+    margin-left: 5px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background: white;
+
+    flex-shrink: 0;
+}
+
+.menu-pesquisa input {
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    padding: 0 10px;
+
+    background: white;
+
+    color: #1f2937;
+
+    font-size: 13px;
+}
+
+.menu-pesquisa input::placeholder {
+    color: #8a919c;
+}
+
+.menu-pesquisa button {
+    width: 40px;
+    height: 100%;
+
+    border: none;
+
+    background: transparent;
+
+    color: #003b7a;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    flex-shrink: 0;
+}
+
+.menu-pesquisa button:hover {
+    background: #f1f5f9;
+}
+
+
+/* =========================================================
+   BOTÃO TEMA
+========================================================= */
+
+.menu-botao {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 10px 11px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.menu-botao:hover {
+    background: rgba(255, 255, 255, 0.14);
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   USUÁRIO
+========================================================= */
+
+.menu-usuario {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 5px 8px;
+
+    border-radius: 8px;
+
+    color: white;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease;
+}
+
+.menu-usuario:hover {
+    background: rgba(255, 255, 255, 0.14);
+
+    color: white;
+}
+
+.menu-usuario:visited {
+    color: white;
+}
+
+.usuario-icone {
+    font-size: 21px;
+
+    line-height: 1;
+}
+
+.usuario-info {
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.1;
+}
+
+.usuario-info strong {
+    color: white;
+
+    font-size: 13px;
+}
+
+.usuario-info small {
     color: #dcecff;
+
+    font-size: 11px;
+
+    margin-top: 2px;
 }
 
-.logout-button {
-    border: 1px solid rgba(255, 255, 255, 0.3);
+
+/* =========================================================
+   BOTÃO SAIR
+========================================================= */
+
+.menu-sair {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 10px 11px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 8px;
+
+    color: white;
+
+    font-size: 14px;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.menu-sair:hover {
+    background: rgba(255, 255, 255, 0.14);
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+.menu-sair:visited {
+    color: white;
 }
 
 
-/* =========================================
+/* =========================================================
+   BOTÃO MENU MOBILE
+========================================================= */
+
+.botao-menu-mobile {
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: white;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.botao-menu-mobile:hover {
+    background: rgba(255, 255, 255, 0.16);
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   CHECKBOX DO MENU MOBILE
+========================================================= */
+
+.menu-mobile-toggle {
+    display: none;
+}
+
+
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+========================================================= */
+
+main {
+    width: 100%;
+}
+
+
+/* =========================================================
    DASHBOARD
-========================================= */
+========================================================= */
 
 .dashboard {
     width: 100%;
+
     max-width: 1250px;
 
     margin: 0 auto;
@@ -141,22 +462,26 @@ a {
 
 .dashboard-title h2 {
     color: #003b7a;
+
     font-size: 30px;
+
     margin-bottom: 7px;
 }
 
 .dashboard-title p {
     color: #6b7280;
+
     font-size: 15px;
 }
 
 
-/* =========================================
-   CARDS DE ESTATÍSTICAS
-========================================= */
+/* =========================================================
+   CARDS DO DASHBOARD
+========================================================= */
 
 .dashboard-cards {
     display: grid;
+
     grid-template-columns: repeat(4, 1fr);
 
     gap: 20px;
@@ -165,23 +490,25 @@ a {
 }
 
 .stat-card {
+    display: flex;
+    align-items: center;
+
+    gap: 17px;
+
+    padding: 22px;
+
     background: white;
 
     border: 1px solid #e5eaf0;
 
     border-radius: 16px;
 
-    padding: 22px;
-
-    display: flex;
-    align-items: center;
-
-    gap: 17px;
-
     box-shadow:
         0 8px 25px rgba(0, 45, 90, 0.07);
 
-    transition: 0.2s;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
@@ -204,6 +531,8 @@ a {
     border-radius: 13px;
 
     font-size: 24px;
+
+    flex-shrink: 0;
 }
 
 .stat-card span {
@@ -225,9 +554,9 @@ a {
 }
 
 
-/* =========================================
+/* =========================================================
    CARDS DE CONTEÚDO
-========================================= */
+========================================================= */
 
 .content-card {
     background: white;
@@ -261,9 +590,9 @@ a {
 }
 
 
-/* =========================================
+/* =========================================================
    ACESSO RÁPIDO
-========================================= */
+========================================================= */
 
 .quick-actions {
     display: grid;
@@ -288,7 +617,10 @@ a {
 
     background: #f9fbfd;
 
-    transition: 0.2s;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
 .quick-card:hover {
@@ -318,13 +650,12 @@ a {
 }
 
 
-/* =========================================
-   STATUS
-========================================= */
+/* =========================================================
+   STATUS DO SISTEMA
+========================================================= */
 
 .system-status {
     display: inline-flex;
-
     align-items: center;
 
     gap: 8px;
@@ -354,9 +685,9 @@ a {
 }
 
 
-/* =========================================
+/* =========================================================
    FORMULÁRIOS
-========================================= */
+========================================================= */
 
 .form-row {
     display: grid;
@@ -385,7 +716,8 @@ a {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
     width: 100%;
 
     padding: 13px 15px;
@@ -402,11 +734,21 @@ a {
 
     outline: none;
 
-    transition: 0.2s;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.form-group textarea {
+    min-height: 120px;
+
+    resize: vertical;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     border-color: #0067b9;
 
     background: white;
@@ -422,9 +764,9 @@ a {
 }
 
 
-/* =========================================
+/* =========================================================
    BOTÃO PRINCIPAL
-========================================= */
+========================================================= */
 
 .btn-login {
     display: inline-flex;
@@ -440,12 +782,11 @@ a {
 
     border-radius: 10px;
 
-    background:
-        linear-gradient(
-            90deg,
-            #003b7a,
-            #0067b9
-        );
+    background: linear-gradient(
+        90deg,
+        #003b7a,
+        #0067b9
+    );
 
     color: white;
 
@@ -455,7 +796,9 @@ a {
 
     cursor: pointer;
 
-    transition: 0.2s;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 
     box-shadow:
         0 6px 18px rgba(0, 59, 122, 0.18);
@@ -469,15 +812,14 @@ a {
 }
 
 
-/* =========================================
+/* =========================================================
    BOTÕES SECUNDÁRIOS
-========================================= */
+========================================================= */
 
 .form-buttons {
     display: flex;
 
     justify-content: flex-end;
-
     align-items: center;
 
     gap: 12px;
@@ -499,9 +841,9 @@ a {
 
     padding: 13px 20px;
 
-    border-radius: 10px;
-
     border: 1px solid #d5dce5;
+
+    border-radius: 10px;
 
     color: #4b5563;
 
@@ -511,22 +853,28 @@ a {
 
     font-weight: bold;
 
-    transition: 0.2s;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .btn-secondary:hover {
     background: #f4f7fb;
+
+    border-color: #c8d1dc;
 }
 
 
-/* =========================================
+/* =========================================================
    TABELAS
-========================================= */
+========================================================= */
 
 .table-container {
     width: 100%;
 
     overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -568,7 +916,8 @@ td {
 }
 
 tbody tr {
-    transition: 0.15s;
+    transition:
+        background 0.15s ease;
 }
 
 tbody tr:hover {
@@ -580,9 +929,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    BADGES
-========================================= */
+========================================================= */
 
 .badge {
     display: inline-flex;
@@ -603,9 +952,9 @@ td strong {
 }
 
 
-/* =========================================
-   CABEÇALHO DA LISTA
-========================================= */
+/* =========================================================
+   CABEÇALHO DAS LISTAS
+========================================================= */
 
 .section-header {
     display: flex;
@@ -646,13 +995,12 @@ td strong {
 }
 
 
-/* =========================================
-   AÇÕES DA TABELA
-========================================= */
+/* =========================================================
+   AÇÕES DAS TABELAS
+========================================================= */
 
 .table-actions {
     display: flex;
-
     align-items: center;
 
     gap: 7px;
@@ -675,7 +1023,8 @@ td strong {
 
     font-weight: bold;
 
-    transition: 0.2s;
+    transition:
+        background 0.2s ease;
 }
 
 .btn-edit {
@@ -715,9 +1064,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    MENSAGEM VAZIA
-========================================= */
+========================================================= */
 
 .empty-message {
     display: flex;
@@ -725,7 +1074,6 @@ td strong {
     flex-direction: column;
 
     align-items: center;
-
     justify-content: center;
 
     gap: 7px;
@@ -754,9 +1102,76 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
+   MENSAGENS DO SISTEMA
+========================================================= */
+
+.flash-container,
+.flash-messages {
+    width: 100%;
+
+    max-width: 1250px;
+
+    margin: 20px auto 0;
+
+    padding: 0 30px;
+}
+
+.flash-message {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 13px 16px;
+
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+.flash-message.success {
+    background: #eef8f1;
+
+    border: 1px solid #cce8d3;
+
+    color: #24733b;
+}
+
+.flash-message.error,
+.flash-message.danger {
+    background: #fdecec;
+
+    border: 1px solid #f3c5c5;
+
+    color: #b42318;
+}
+
+.flash-message.warning {
+    background: #fff8e1;
+
+    border: 1px solid #f0df9c;
+
+    color: #8a6500;
+}
+
+.flash-message.info {
+    background: #eaf4fc;
+
+    border: 1px solid #cfe3f5;
+
+    color: #005ca9;
+}
+
+
+/* =========================================================
    LOGIN
-========================================= */
+========================================================= */
 
 .login-page {
     min-height: 100vh;
@@ -765,22 +1180,21 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    LADO ESQUERDO DO LOGIN
-========================================= */
+========================================================= */
 
 .welcome-section {
     position: relative;
 
     width: 52%;
 
-    background:
-        linear-gradient(
-            145deg,
-            #003b7a 0%,
-            #005ca9 55%,
-            #0072bc 100%
-        );
+    background: linear-gradient(
+        145deg,
+        #003b7a 0%,
+        #005ca9 55%,
+        #0072bc 100%
+    );
 
     color: white;
 
@@ -788,9 +1202,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    FAIXA COLORIDA
-========================================= */
+========================================================= */
 
 .color-bar {
     position: absolute;
@@ -825,9 +1239,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    CONTEÚDO DO LOGIN
-========================================= */
+========================================================= */
 
 .welcome-content {
     position: relative;
@@ -841,11 +1255,6 @@ td strong {
     padding: 70px 60px;
 }
 
-
-/* =========================================
-   NOME DO ESTADO
-========================================= */
-
 .state-name {
     font-size: 13px;
 
@@ -858,11 +1267,6 @@ td strong {
     margin-bottom: 18px;
 }
 
-
-/* =========================================
-   TÍTULO
-========================================= */
-
 .welcome-content h1 {
     font-size: 58px;
 
@@ -873,11 +1277,6 @@ td strong {
     margin-bottom: 22px;
 }
 
-
-/* =========================================
-   LINHA COLORIDA
-========================================= */
-
 .line {
     width: 75px;
 
@@ -885,32 +1284,21 @@ td strong {
 
     border-radius: 10px;
 
-    background:
-        linear-gradient(
-            to right,
-            #c62828,
-            #f4c400,
-            #16833b
-        );
+    background: linear-gradient(
+        to right,
+        #c62828,
+        #f4c400,
+        #16833b
+    );
 
     margin-bottom: 25px;
 }
-
-
-/* =========================================
-   NOME DA ESCOLA
-========================================= */
 
 .welcome-content h2 {
     font-size: 25px;
 
     margin-bottom: 8px;
 }
-
-
-/* =========================================
-   DESCRIÇÃO
-========================================= */
 
 .description {
     font-size: 16px;
@@ -919,12 +1307,9 @@ td strong {
 }
 
 
-/* =========================================
-   LOGO DA ETE
-   SEM CÍRCULO
-   SEM BORDA
-   SEM FUNDO
-========================================= */
+/* =========================================================
+   LOGO ETE
+========================================================= */
 
 .ariano-placeholder {
     width: 220px;
@@ -936,12 +1321,8 @@ td strong {
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 }
-
-
-/* IMAGEM */
 
 .ariano-placeholder img {
     width: 100%;
@@ -954,9 +1335,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    LADO DIREITO DO LOGIN
-========================================= */
+========================================================= */
 
 .login-section {
     width: 48%;
@@ -964,7 +1345,6 @@ td strong {
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     padding: 40px;
@@ -973,9 +1353,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    CARD LOGIN
-========================================= */
+========================================================= */
 
 .login-card {
     width: 100%;
@@ -994,7 +1374,6 @@ td strong {
     border: 1px solid #e5eaf0;
 }
 
-
 .login-card h2 {
     color: #003b7a;
 
@@ -1002,7 +1381,6 @@ td strong {
 
     margin-bottom: 8px;
 }
-
 
 .login-subtitle {
     color: #6b7280;
@@ -1013,9 +1391,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    ESQUECI SENHA
-========================================= */
+========================================================= */
 
 .forgot-password {
     text-align: right;
@@ -1038,9 +1416,9 @@ td strong {
 }
 
 
-/* =========================================
+/* =========================================================
    RODAPÉ LOGIN
-========================================= */
+========================================================= */
 
 .login-footer {
     text-align: center;
@@ -1069,9 +1447,9 @@ td strong {
 }
 
 
-/* =========================================
-   MENSAGEM DE ERRO LOGIN
-========================================= */
+/* =========================================================
+   ERRO LOGIN
+========================================================= */
 
 .login-error {
     padding: 12px 15px;
@@ -1092,18 +1470,94 @@ td strong {
 }
 
 
-/* =========================================
-   RESPONSIVIDADE
-========================================= */
+/* =========================================================
+   MODO ESCURO
+   Mantido preparado para implementação futura
+========================================================= */
 
-@media (max-width: 1000px) {
+body.modo-escuro {
+    background: #121212;
+
+    color: #eeeeee;
+}
+
+body.modo-escuro .topo {
+    background: linear-gradient(
+        135deg,
+        #002b59,
+        #004b87
+    );
+}
+
+body.modo-escuro .menu-pesquisa {
+    background: #2a2a2a;
+
+    border-color: #444444;
+}
+
+body.modo-escuro .menu-pesquisa input {
+    background: #2a2a2a;
+
+    color: white;
+}
+
+body.modo-escuro .content-card,
+body.modo-escuro .stat-card {
+    background: #1e1e1e;
+
+    border-color: #333333;
+}
+
+body.modo-escuro .dashboard-title h2,
+body.modo-escuro .content-card h3,
+body.modo-escuro .stat-card strong {
+    color: #dcecff;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE - 1100PX
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .topo {
+        padding: 0 18px;
+    }
+
+    .menu-principal {
+        gap: 3px;
+    }
+
+    .menu-item,
+    .menu-botao,
+    .menu-sair {
+        padding: 9px 7px;
+
+        font-size: 12px;
+    }
+
+    .menu-pesquisa {
+        width: 130px;
+    }
+
+    .menu-usuario {
+        padding: 5px;
+    }
+
+    .usuario-info {
+        display: none;
+    }
 
     .dashboard-cards {
         grid-template-columns: repeat(2, 1fr);
     }
-
 }
 
+
+/* =========================================================
+   RESPONSIVIDADE - 900PX
+========================================================= */
 
 @media (max-width: 900px) {
 
@@ -1126,15 +1580,261 @@ td strong {
     .ariano-placeholder {
         width: 180px;
     }
-
-    .dashboard-header {
-        padding: 14px 25px;
-    }
-
 }
 
 
-@media (max-width: 700px) {
+/* =========================================================
+   RESPONSIVIDADE - MENU MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+
+    .topo {
+        min-height: 65px;
+
+        padding: 0 16px;
+
+        justify-content: space-between;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGO MOBILE
+    ----------------------------------------------------- */
+
+    .logo-texto {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 0;
+    }
+
+    .logo-texto strong {
+        font-size: 18px;
+    }
+
+    .logo-texto span {
+        font-size: 13px;
+
+        color: #dcecff;
+    }
+
+
+    /* -----------------------------------------------------
+       BOTÃO MOBILE
+    ----------------------------------------------------- */
+
+    .botao-menu-mobile {
+        display: flex;
+    }
+
+
+    /* -----------------------------------------------------
+       MENU MOBILE
+    ----------------------------------------------------- */
+
+    .menu-principal {
+        position: absolute;
+
+        top: 65px;
+
+        left: 0;
+
+        width: 100%;
+
+        display: none;
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 4px;
+
+        padding: 12px;
+
+        margin: 0;
+
+        background: linear-gradient(
+            180deg,
+            #003b7a,
+            #005ca9
+        );
+
+        border-top:
+            1px solid rgba(255, 255, 255, 0.12);
+
+        border-bottom:
+            1px solid rgba(255, 255, 255, 0.18);
+
+        box-shadow:
+            0 8px 20px rgba(0, 45, 90, 0.20);
+
+        z-index: 2000;
+    }
+
+
+    /* -----------------------------------------------------
+       ABRIR MENU
+    ----------------------------------------------------- */
+
+    .menu-mobile-toggle:checked ~ .menu-principal {
+        display: flex;
+    }
+
+
+    /* -----------------------------------------------------
+       ITENS MOBILE
+    ----------------------------------------------------- */
+
+    .menu-item,
+    .menu-botao,
+    .menu-usuario,
+    .menu-sair {
+        width: 100%;
+
+        padding: 12px;
+
+        border-radius: 8px;
+
+        color: white;
+
+        font-size: 14px;
+    }
+
+    .menu-item:hover,
+    .menu-botao:hover,
+    .menu-usuario:hover,
+    .menu-sair:hover {
+        background:
+            rgba(255, 255, 255, 0.14);
+
+        transform: none;
+    }
+
+
+    /* -----------------------------------------------------
+       ITEM ATIVO
+    ----------------------------------------------------- */
+
+    .menu-item.active {
+        background:
+            rgba(255, 255, 255, 0.20);
+
+        box-shadow:
+            inset 3px 0 0 white;
+    }
+
+
+    /* -----------------------------------------------------
+       PESQUISA MOBILE
+    ----------------------------------------------------- */
+
+    .menu-pesquisa {
+        width: 100%;
+
+        height: 42px;
+
+        margin: 5px 0;
+
+        background: white;
+    }
+
+    .menu-pesquisa input {
+        width: 100%;
+
+        flex: 1;
+
+        background: white;
+
+        color: #1f2937;
+    }
+
+    .menu-pesquisa button {
+        width: 40px;
+
+        color: #003b7a;
+    }
+
+
+    /* -----------------------------------------------------
+       TEMA MOBILE
+    ----------------------------------------------------- */
+
+    .menu-botao {
+        display: flex;
+
+        align-items: center;
+
+        gap: 7px;
+
+        background: transparent;
+
+        color: white;
+
+        border: none;
+
+        cursor: pointer;
+    }
+
+
+    /* -----------------------------------------------------
+       USUÁRIO MOBILE
+    ----------------------------------------------------- */
+
+    .menu-usuario {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding: 10px 12px;
+
+        background:
+            rgba(255, 255, 255, 0.06);
+    }
+
+    .usuario-info {
+        display: flex;
+    }
+
+    .usuario-info strong {
+        color: white;
+    }
+
+    .usuario-info small {
+        color: #dcecff;
+    }
+
+
+    /* -----------------------------------------------------
+       SAIR MOBILE
+    ----------------------------------------------------- */
+
+    .menu-sair {
+        display: flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-top: 3px;
+
+        padding: 12px;
+
+        border-top:
+            1px solid rgba(255, 255, 255, 0.12);
+
+        border-radius: 0 0 8px 8px;
+
+        color: white;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGIN MOBILE
+    ----------------------------------------------------- */
 
     .login-page {
         display: block;
@@ -1186,33 +1886,27 @@ td strong {
         border: none;
     }
 
+
+    /* -----------------------------------------------------
+       DASHBOARD MOBILE
+    ----------------------------------------------------- */
+
     .dashboard {
         padding: 30px 18px 50px;
     }
 
-    .dashboard-header {
-        padding: 14px 18px;
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 15px;
-    }
-
-    .header-user {
-        width: 100%;
-
-        justify-content: space-between;
-    }
-
-    .logged-user {
-        align-items: flex-start;
+    .dashboard-title h2 {
+        font-size: 25px;
     }
 
     .dashboard-cards {
         grid-template-columns: 1fr;
     }
+
+
+    /* -----------------------------------------------------
+       FORMULÁRIOS MOBILE
+    ----------------------------------------------------- */
 
     .form-row {
         grid-template-columns: 1fr;
@@ -1220,19 +1914,39 @@ td strong {
         gap: 0;
     }
 
+
+    /* -----------------------------------------------------
+       ACESSO RÁPIDO MOBILE
+    ----------------------------------------------------- */
+
     .quick-actions {
         grid-template-columns: 1fr;
     }
 
+
+    /* -----------------------------------------------------
+       CARDS MOBILE
+    ----------------------------------------------------- */
+
     .content-card {
         padding: 22px;
     }
+
+
+    /* -----------------------------------------------------
+       CABEÇALHOS MOBILE
+    ----------------------------------------------------- */
 
     .section-header {
         align-items: flex-start;
 
         flex-direction: column;
     }
+
+
+    /* -----------------------------------------------------
+       BOTÕES MOBILE
+    ----------------------------------------------------- */
 
     .form-buttons {
         flex-direction: column-reverse;
@@ -1244,37 +1958,70 @@ td strong {
     .btn-secondary {
         width: 100%;
     }
-
 }
 
 
-/* =========================================
-   MENU PRINCIPAL
-========================================= */
+/* =========================================================
+   RESPONSIVIDADE - CELULAR PEQUENO
+========================================================= */
 
-.main-navigation {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-    margin-right: 25px;
+@media (max-width: 450px) {
+
+    .topo {
+        padding: 0 12px;
+    }
+
+    .logo-icone {
+        font-size: 24px;
+    }
+
+    .logo-texto strong {
+        font-size: 17px;
+    }
+
+    .logo-texto span {
+        font-size: 12px;
+    }
+
+    .botao-menu-mobile {
+        width: 40px;
+        height: 40px;
+    }
+
+
+    /* -----------------------------------------------------
+       DASHBOARD
+    ----------------------------------------------------- */
+
+    .dashboard {
+        padding: 25px 14px 40px;
+    }
+
+    .content-card {
+        padding: 18px;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGIN
+    ----------------------------------------------------- */
+
+    .login-card {
+        padding: 25px 18px;
+    }
+
+    .welcome-content h1 {
+        font-size: 34px;
+    }
+
+
+    /* -----------------------------------------------------
+       FORMULÁRIOS
+    ----------------------------------------------------- */
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 12px;
+    }
 }
-
-.main-navigation .nav-link {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 600;
-    padding: 10px 14px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.main-navigation .nav-link:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-}
-
-.main-navigation .nav-link:visited {
-    color: #ffffff;
-}
-

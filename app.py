@@ -1,16 +1,33 @@
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 from banco import conectar
 from datetime import datetime
+import secrets
+import string
 
 
 app = Flask(__name__)
+
 
 # =========================================
 # CONFIGURAÇÃO DA SESSÃO
 # =========================================
 
 app.secret_key = "ete-ariano-suassuna-gestao-escolar"
+
+
+# =========================================
+# GERAR SENHA INICIAL
+# =========================================
+
+def gerar_senha_inicial():
+
+    caracteres = string.ascii_letters + string.digits
+
+    return "".join(
+        secrets.choice(caracteres)
+        for _ in range(8)
+    )
 
 
 # =========================================
@@ -32,36 +49,291 @@ def inicio():
             SELECT *
             FROM usuarios
             WHERE email = ?
-            AND senha = ?
             """,
-            (email, senha)
+            (email,)
         ).fetchone()
 
         conexao.close()
 
-        if usuario:
+        if usuario and check_password_hash(usuario["senha"], senha):
 
             session["usuario_id"] = usuario["id"]
             session["usuario_nome"] = usuario["nome"]
             session["usuario_email"] = usuario["email"]
             session["usuario_tipo"] = usuario["tipo"]
 
+            # =========================================
+            # PRIMEIRO ACESSO
+            # =========================================
+
+            if usuario["primeiro_acesso"] == 1:
+
+                return redirect(
+                    url_for("trocar_senha")
+                )
+
+            # =========================================
+            # REDIRECIONAMENTO POR TIPO
+            # =========================================
+
             if usuario["tipo"] == "gestao":
-                return redirect(url_for("dashboard"))
+
+                return redirect(
+                    url_for("dashboard")
+                )
 
             if usuario["tipo"] == "professor":
-                return redirect(url_for("professor"))
+
+                return redirect(
+                    url_for("professor")
+                )
 
             if usuario["tipo"] == "aluno":
-                return redirect(url_for("aluno"))
 
-            return redirect(url_for("dashboard"))
+                return redirect(
+                    url_for("aluno")
+                )
 
-        flash("E-mail ou senha inválidos.", "error")
+            return redirect(
+                url_for("dashboard")
+            )
 
-        return render_template("login.html")
+        flash(
+            "E-mail ou senha inválidos.",
+            "error"
+        )
 
-    return render_template("login.html")
+    return render_template(
+        "login.html"
+    )
+
+
+# =========================================
+# PRIMEIRO ACESSO — TROCAR SENHA
+# =========================================
+
+@app.route("/trocar-senha", methods=["GET", "POST"])
+def trocar_senha():
+
+    if "usuario_id" not in session:
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    conexao = conectar()
+
+    usuario_id = session["usuario_id"]
+
+    usuario = conexao.execute(
+        """
+        SELECT *
+        FROM usuarios
+        WHERE id = ?
+        """,
+        (usuario_id,)
+    ).fetchone()
+
+    if usuario is None:
+
+        conexao.close()
+
+        session.clear()
+
+        flash(
+            "Usuário não encontrado.",
+            "error"
+        )
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    # =========================================
+    # SE JÁ TROCOU A SENHA
+    # =========================================
+
+    if usuario["primeiro_acesso"] == 0:
+
+        conexao.close()
+
+        if usuario["tipo"] == "gestao":
+
+            return redirect(
+                url_for("dashboard")
+            )
+
+        if usuario["tipo"] == "professor":
+
+            return redirect(
+                url_for("professor")
+            )
+
+        if usuario["tipo"] == "aluno":
+
+            return redirect(
+                url_for("aluno")
+            )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    # =========================================
+    # PROCESSAR NOVA SENHA
+    # =========================================
+
+    if request.method == "POST":
+
+        nova_senha = request.form.get(
+            "nova_senha",
+            ""
+        ).strip()
+
+        confirmar_senha = request.form.get(
+            "confirmar_senha",
+            ""
+        ).strip()
+
+        # =========================================
+        # CAMPOS VAZIOS
+        # =========================================
+
+        if not nova_senha or not confirmar_senha:
+
+            conexao.close()
+
+            flash(
+                "Preencha os dois campos de senha.",
+                "error"
+            )
+
+            return render_template(
+                "trocar_senha.html",
+                usuario_nome=session["usuario_nome"],
+                usuario_tipo=session["usuario_tipo"]
+            )
+
+        # =========================================
+        # SENHAS DIFERENTES
+        # =========================================
+
+        if nova_senha != confirmar_senha:
+
+            conexao.close()
+
+            flash(
+                "As senhas não são iguais.",
+                "error"
+            )
+
+            return render_template(
+                "trocar_senha.html",
+                usuario_nome=session["usuario_nome"],
+                usuario_tipo=session["usuario_tipo"]
+            )
+
+        # =========================================
+        # TAMANHO DA SENHA
+        # =========================================
+
+        if len(nova_senha) < 6:
+
+            conexao.close()
+
+            flash(
+                "A nova senha deve possuir pelo menos 6 caracteres.",
+                "error"
+            )
+
+            return render_template(
+                "trocar_senha.html",
+                usuario_nome=session["usuario_nome"],
+                usuario_tipo=session["usuario_tipo"]
+            )
+
+        # =========================================
+        # GERAR HASH
+        # =========================================
+
+        senha_hash = generate_password_hash(
+            nova_senha
+        )
+
+        try:
+
+            conexao.execute(
+                """
+                UPDATE usuarios
+                SET
+                    senha = ?,
+                    primeiro_acesso = 0
+                WHERE id = ?
+                """,
+                (
+                    senha_hash,
+                    usuario_id
+                )
+            )
+
+            conexao.commit()
+
+            conexao.close()
+
+            flash(
+                "Senha criada com sucesso!",
+                "success"
+            )
+
+            # =========================================
+            # REDIRECIONAMENTO
+            # =========================================
+
+            if session["usuario_tipo"] == "gestao":
+
+                return redirect(
+                    url_for("dashboard")
+                )
+
+            if session["usuario_tipo"] == "professor":
+
+                return redirect(
+                    url_for("professor")
+                )
+
+            if session["usuario_tipo"] == "aluno":
+
+                return redirect(
+                    url_for("aluno")
+                )
+
+            return redirect(
+                url_for("dashboard")
+            )
+
+        except Exception as erro:
+
+            conexao.rollback()
+
+            print(
+                "Erro ao alterar senha:",
+                erro
+            )
+
+            conexao.close()
+
+            flash(
+                "Erro ao criar a nova senha.",
+                "error"
+            )
+
+    conexao.close()
+
+    return render_template(
+        "trocar_senha.html",
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
 
 
 # =========================================
@@ -72,7 +344,21 @@ def inicio():
 def dashboard():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    if session.get("usuario_tipo") != "gestao":
+
+        flash(
+            "Você não tem permissão para acessar o painel da gestão.",
+            "error"
+        )
+
+        return redirect(
+            url_for("inicio")
+        )
 
     conexao = conectar()
 
@@ -135,11 +421,21 @@ def dashboard():
 def usuarios_page():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para acessar esta área.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para acessar esta área.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     conexao = conectar()
 
@@ -159,7 +455,11 @@ def usuarios_page():
             ""
         ).strip()
 
-        senha = "123456"
+        senha_inicial = gerar_senha_inicial()
+
+        senha = generate_password_hash(
+            senha_inicial
+        )
 
         try:
 
@@ -190,9 +490,10 @@ def usuarios_page():
                         tipo,
                         telefone,
                         turma,
-                        senha
+                        senha,
+                        primeiro_acesso
                     )
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         nome,
@@ -200,14 +501,17 @@ def usuarios_page():
                         tipo,
                         telefone,
                         turma,
-                        senha
+                        senha,
+                        1
                     )
                 )
 
                 conexao.commit()
 
                 flash(
-                    f"Usuário {nome} cadastrado com sucesso!",
+                    f"Usuário {nome} cadastrado com sucesso! "
+                    f"Senha inicial: {senha_inicial}. "
+                    f"Entregue esta senha ao usuário.",
                     "success"
                 )
 
@@ -260,11 +564,21 @@ def usuarios_page():
 def editar_usuario(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para editar usuários.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para editar usuários.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     conexao = conectar()
 
@@ -281,9 +595,14 @@ def editar_usuario(id):
 
         conexao.close()
 
-        flash("Usuário não encontrado.", "error")
+        flash(
+            "Usuário não encontrado.",
+            "error"
+        )
 
-        return redirect(url_for("usuarios_page"))
+        return redirect(
+            url_for("usuarios_page")
+        )
 
     if request.method == "POST":
 
@@ -419,11 +738,21 @@ def editar_usuario(id):
 def excluir_usuario(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para excluir usuários.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para excluir usuários.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     if id == session["usuario_id"]:
 
@@ -510,11 +839,21 @@ def excluir_usuario(id):
 def turmas_page():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para acessar as turmas.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para acessar as turmas.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     conexao = conectar()
 
@@ -625,7 +964,10 @@ def turmas_page():
 def ver_turma(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     conexao = conectar()
 
@@ -681,11 +1023,21 @@ def ver_turma(id):
 def excluir_turma(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para excluir turmas.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para excluir turmas.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     conexao = conectar()
 
@@ -784,11 +1136,21 @@ def excluir_turma(id):
 def editar_turma(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
-        flash("Você não tem permissão para editar turmas.", "error")
-        return redirect(url_for("dashboard"))
+
+        flash(
+            "Você não tem permissão para editar turmas.",
+            "error"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
 
     conexao = conectar()
 
@@ -944,7 +1306,10 @@ def editar_turma(id):
 def perfil():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     conexao = conectar()
 
@@ -1049,7 +1414,10 @@ def perfil():
 def professor():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "professor":
 
@@ -1157,7 +1525,10 @@ def professor():
 def meus_alunos():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "professor":
 
@@ -1241,7 +1612,10 @@ def meus_alunos():
 def aluno():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "aluno":
 
@@ -1339,7 +1713,10 @@ def aluno():
 def avisos_page():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
 
@@ -1438,7 +1815,10 @@ def avisos_page():
 def editar_aviso(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
 
@@ -1567,7 +1947,10 @@ def editar_aviso(id):
 def excluir_aviso(id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     if session.get("usuario_tipo") != "gestao":
 
@@ -1654,7 +2037,10 @@ def excluir_aviso(id):
 def comunicacao():
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     conexao = conectar()
 
@@ -1663,12 +2049,8 @@ def comunicacao():
 
     contatos = []
 
-
     # =========================================
     # ALUNO
-    # ALUNO FALA COM:
-    # - GESTÃO
-    # - PROFESSORES DA SUA TURMA
     # =========================================
 
     if usuario_tipo == "aluno":
@@ -1735,12 +2117,8 @@ def comunicacao():
                 (usuario_id,)
             ).fetchall()
 
-
     # =========================================
     # PROFESSOR
-    # PROFESSOR FALA COM:
-    # - GESTÃO
-    # - ALUNOS DA SUA TURMA
     # =========================================
 
     elif usuario_tipo == "professor":
@@ -1807,12 +2185,8 @@ def comunicacao():
                 (usuario_id,)
             ).fetchall()
 
-
     # =========================================
     # GESTÃO
-    # GESTÃO FALA COM:
-    # - PROFESSORES
-    # - ALUNOS
     # =========================================
 
     elif usuario_tipo == "gestao":
@@ -1838,7 +2212,6 @@ def comunicacao():
             """,
             (usuario_id,)
         ).fetchall()
-
 
     # =========================================
     # MENSAGENS NÃO LIDAS
@@ -1866,8 +2239,9 @@ def comunicacao():
 
         contato_dict["nao_lidas"] = nao_lidas
 
-        contatos_com_mensagens.append(contato_dict)
-
+        contatos_com_mensagens.append(
+            contato_dict
+        )
 
     conexao.close()
 
@@ -1887,13 +2261,15 @@ def comunicacao():
 def conversa(contato_id):
 
     if "usuario_id" not in session:
-        return redirect(url_for("inicio"))
+
+        return redirect(
+            url_for("inicio")
+        )
 
     conexao = conectar()
 
     usuario_id = session["usuario_id"]
     usuario_tipo = session["usuario_tipo"]
-
 
     # =========================================
     # VERIFICAR CONTATO
@@ -1921,16 +2297,13 @@ def conversa(contato_id):
             url_for("comunicacao")
         )
 
-
     # =========================================
-    # VERIFICAR PERMISSÃO DE COMUNICAÇÃO
+    # VERIFICAR PERMISSÃO
     # =========================================
 
     permitido = False
 
-
-    # Gestão pode conversar com qualquer
-    # professor ou aluno.
+    # Gestão
 
     if usuario_tipo == "gestao":
 
@@ -1938,10 +2311,7 @@ def conversa(contato_id):
 
             permitido = True
 
-
-    # Professor pode conversar com:
-    # Gestão
-    # Alunos da própria turma
+    # Professor
 
     elif usuario_tipo == "professor":
 
@@ -1964,10 +2334,7 @@ def conversa(contato_id):
 
                 permitido = True
 
-
-    # Aluno pode conversar com:
-    # Gestão
-    # Professores da própria turma
+    # Aluno
 
     elif usuario_tipo == "aluno":
 
@@ -1990,7 +2357,6 @@ def conversa(contato_id):
 
                 permitido = True
 
-
     if not permitido:
 
         conexao.close()
@@ -2003,7 +2369,6 @@ def conversa(contato_id):
         return redirect(
             url_for("comunicacao")
         )
-
 
     # =========================================
     # ENVIAR MENSAGEM
@@ -2051,7 +2416,6 @@ def conversa(contato_id):
             )
         )
 
-
     # =========================================
     # BUSCAR MENSAGENS
     # =========================================
@@ -2084,9 +2448,8 @@ def conversa(contato_id):
         )
     ).fetchall()
 
-
     # =========================================
-    # MARCAR RECEBIDAS COMO LIDAS
+    # MARCAR COMO LIDAS
     # =========================================
 
     conexao.execute(
@@ -2105,7 +2468,6 @@ def conversa(contato_id):
     conexao.commit()
 
     conexao.close()
-
 
     return render_template(
         "conversa.html",
@@ -2134,10 +2496,10 @@ def logout():
 # =========================================
 # EXECUTAR SISTEMA
 # =========================================
-
 if __name__ == "__main__":
 
     app.run(
+        host="0.0.0.0",
+        port=5000,
         debug=True
     )
-

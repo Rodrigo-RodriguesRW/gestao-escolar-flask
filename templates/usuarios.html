@@ -1,32 +1,30 @@
-
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>Usuários | Gestão Escolar</title>
+<title>Usuários | Gestão Escolar</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+>
+```
 
 </head>
 
-
 <body>
 
-
 {% include "menu.html" %}
-
-
 
 <!-- =========================================
      CONTEÚDO
@@ -34,607 +32,572 @@
 
 <main class="dashboard">
 
+```
+<!-- =========================================
+     TÍTULO
+========================================== -->
 
-    <!-- =========================================
-         TÍTULO
-    ========================================== -->
+<div class="dashboard-title">
 
-    <div class="dashboard-title">
+    <h2>
 
-        <h2>
+        👥 Usuários
 
-            👥 Usuários
+    </h2>
 
-        </h2>
+    <p>
 
-        <p>
+        Cadastre, edite e gerencie os usuários
+        da comunidade escolar.
 
-            Cadastre, edite e gerencie os usuários
-            da comunidade escolar.
+    </p>
 
-        </p>
+</div>
+
+
+
+<!-- =========================================
+     MENSAGENS DO SISTEMA
+========================================== -->
+
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+
+    {% if mensagens %}
+
+        <div class="flash-messages">
+
+            {% for categoria, mensagem in mensagens %}
+
+                <div class="flash-message {{ categoria }}">
+
+                    {% if categoria == "success" %}
+
+                        ✅
+
+                    {% elif categoria == "danger" or categoria == "error" %}
+
+                        ❌
+
+                    {% elif categoria == "warning" %}
+
+                        ⚠️
+
+                    {% else %}
+
+                        ℹ️
+
+                    {% endif %}
+
+
+                    <span>
+
+                        {{ mensagem }}
+
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+{% endwith %}
+
+
+
+<!-- =========================================
+     CADASTRO
+========================================== -->
+
+<section class="content-card">
+
+
+    <div class="section-header">
+
+        <div>
+
+            <h3>
+
+                ➕ Cadastrar novo usuário
+
+            </h3>
+
+            <p>
+
+                Preencha os dados para cadastrar
+                um novo integrante da comunidade escolar.
+
+            </p>
+
+        </div>
 
     </div>
 
 
 
-    <!-- =========================================
-         MENSAGENS DO SISTEMA
-    ========================================== -->
-
-    {% with mensagens = get_flashed_messages(with_categories=true) %}
-
-        {% if mensagens %}
-
-            <div class="flash-messages">
-
-                {% for categoria, mensagem in mensagens %}
-
-                    <div class="flash-message {{ categoria }}">
-
-                        {% if categoria == "success" %}
-
-                            ✅
-
-                        {% elif categoria == "danger" %}
-
-                            ❌
-
-                        {% elif categoria == "warning" %}
-
-                            ⚠️
-
-                        {% else %}
-
-                            ℹ️
-
-                        {% endif %}
+    <form method="POST">
 
 
-                        <span>
+        <!-- NOME / E-MAIL -->
 
-                            {{ mensagem }}
-
-                        </span>
-
-                    </div>
-
-                {% endfor %}
-
-            </div>
-
-        {% endif %}
-
-    {% endwith %}
+        <div class="form-row">
 
 
+            <div class="form-group">
 
-    <!-- =========================================
-         CADASTRO
-    ========================================== -->
+                <label for="nome">
 
-    <section class="content-card">
+                    Nome completo
 
+                </label>
 
-        <div class="section-header">
-
-            <div>
-
-                <h3>
-
-                    ➕ Cadastrar novo usuário
-
-                </h3>
-
-                <p>
-
-                    Preencha os dados para cadastrar
-                    um novo integrante da comunidade escolar.
-
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <form method="POST">
-
-
-            <!-- NOME / E-MAIL -->
-
-            <div class="form-row">
-
-
-                <div class="form-group">
-
-                    <label for="nome">
-
-                        Nome completo
-
-                    </label>
-
-                    <input
-                        type="text"
-                        id="nome"
-                        name="nome"
-                        placeholder="Digite o nome completo"
-                        required
-                    >
-
-                </div>
-
-
-
-                <div class="form-group">
-
-                    <label for="email">
-
-                        E-mail
-
-                    </label>
-
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        placeholder="exemplo@ete.com"
-                        required
-                    >
-
-                </div>
-
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    placeholder="Digite o nome completo"
+                    required
+                >
 
             </div>
 
 
 
-            <!-- TIPO / TELEFONE -->
+            <div class="form-group">
 
-            <div class="form-row">
+                <label for="email">
 
+                    E-mail
 
-                <div class="form-group">
+                </label>
 
-                    <label for="tipo">
-
-                        Tipo de usuário
-
-                    </label>
-
-                    <select
-                        id="tipo"
-                        name="tipo"
-                        required
-                    >
-
-                        <option value="">
-
-                            Selecione o tipo
-
-                        </option>
-
-                        <option value="gestao">
-
-                            Gestão
-
-                        </option>
-
-                        <option value="professor">
-
-                            Professor
-
-                        </option>
-
-                        <option value="aluno">
-
-                            Aluno
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-
-                <div class="form-group">
-
-                    <label for="telefone">
-
-                        Telefone
-
-                    </label>
-
-                    <input
-                        type="text"
-                        id="telefone"
-                        name="telefone"
-                        placeholder="(87) 99999-9999"
-                    >
-
-                </div>
-
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="exemplo@ete.com"
+                    required
+                >
 
             </div>
-
-
-
-            <!-- TURMA / SENHA -->
-
-            <div class="form-row">
-
-
-                <div class="form-group">
-
-                    <label for="turma">
-
-                        Turma
-
-                    </label>
-
-                    <select
-                        id="turma"
-                        name="turma"
-                    >
-
-                        <option value="">
-
-                            Nenhuma turma
-
-                        </option>
-
-
-                        {% for turma in turmas %}
-
-                            <option value="{{ turma['nome'] }}">
-
-                                {{ turma['nome'] }}
-                                -
-                                {{ turma['curso'] }}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-
-                <div class="form-group">
-
-                    <label>
-
-                        Senha inicial
-
-                    </label>
-
-                    <input
-                        type="text"
-                        value="123456"
-                        disabled
-                    >
-
-                </div>
-
-
-            </div>
-
-
-
-            <button
-                type="submit"
-                class="btn-login"
-            >
-
-                👤 Cadastrar usuário
-
-            </button>
-
-
-        </form>
-
-
-    </section>
-
-
-
-    <!-- =========================================
-         LISTA DE USUÁRIOS
-    ========================================== -->
-
-    <section class="content-card users-list">
-
-
-        <div class="section-header">
-
-
-            <div>
-
-                <h3>
-
-                    📋 Usuários cadastrados
-
-                </h3>
-
-                <p>
-
-                    Consulte e gerencie os usuários
-                    registrados no sistema.
-
-                </p>
-
-            </div>
-
-
-            <span class="total-badge">
-
-                {{ usuarios|length }} usuário(s)
-
-            </span>
 
 
         </div>
 
 
 
-        {% if usuarios %}
+        <!-- TIPO / TELEFONE -->
+
+        <div class="form-row">
 
 
-            <div class="table-container">
+            <div class="form-group">
+
+                <label for="tipo">
+
+                    Tipo de usuário
+
+                </label>
+
+                <select
+                    id="tipo"
+                    name="tipo"
+                    required
+                >
+
+                    <option value="">
+
+                        Selecione o tipo
+
+                    </option>
+
+                    <option value="gestao">
+
+                        Gestão
+
+                    </option>
+
+                    <option value="professor">
+
+                        Professor
+
+                    </option>
+
+                    <option value="aluno">
+
+                        Aluno
+
+                    </option>
+
+                </select>
+
+            </div>
 
 
-                <table>
+
+            <div class="form-group">
+
+                <label for="telefone">
+
+                    Telefone
+
+                </label>
+
+                <input
+                    type="text"
+                    id="telefone"
+                    name="telefone"
+                    placeholder="(87) 99999-9999"
+                >
+
+            </div>
 
 
-                    <thead>
+        </div>
+
+
+
+        <!-- TURMA / SENHA -->
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+                <label for="turma">
+
+                    Turma
+
+                </label>
+
+                <select
+                    id="turma"
+                    name="turma"
+                >
+
+                    <option value="">
+
+                        Nenhuma turma
+
+                    </option>
+
+
+                    {% for turma in turmas %}
+
+                        <option value="{{ turma['nome'] }}">
+
+                            {{ turma['nome'] }}
+                            -
+                            {{ turma['curso'] }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>
+
+                    🔐 Senha inicial
+
+                </label>
+
+                <input
+                    type="text"
+                    value="Gerada automaticamente"
+                    disabled
+                >
+
+                <small>
+
+                    Uma senha segura será gerada
+                    automaticamente após o cadastro.
+
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+
+        <button
+            type="submit"
+            class="btn-login"
+        >
+
+            👤 Cadastrar usuário
+
+        </button>
+
+
+    </form>
+
+
+</section>
+
+
+
+<!-- =========================================
+     LISTA DE USUÁRIOS
+========================================== -->
+
+<section class="content-card users-list">
+
+
+    <div class="section-header">
+
+
+        <div>
+
+            <h3>
+
+                📋 Usuários cadastrados
+
+            </h3>
+
+            <p>
+
+                Consulte e gerencie os usuários
+                registrados no sistema.
+
+            </p>
+
+        </div>
+
+
+        <span class="total-badge">
+
+            {{ usuarios|length }} usuário(s)
+
+        </span>
+
+
+    </div>
+
+
+
+    {% if usuarios %}
+
+
+        <div class="table-container">
+
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+
+                            Nome
+
+                        </th>
+
+                        <th>
+
+                            E-mail
+
+                        </th>
+
+                        <th>
+
+                            Tipo
+
+                        </th>
+
+                        <th>
+
+                            Telefone
+
+                        </th>
+
+                        <th>
+
+                            Turma
+
+                        </th>
+
+                        <th>
+
+                            Ações
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+
+                <tbody>
+
+
+                    {% for usuario in usuarios %}
+
 
                         <tr>
 
-                            <th>
 
-                                Nome
+                            <!-- NOME -->
 
-                            </th>
+                            <td>
 
-                            <th>
+                                <strong>
 
-                                E-mail
+                                    {{ usuario['nome'] }}
 
-                            </th>
+                                </strong>
 
-                            <th>
+                            </td>
 
-                                Tipo
 
-                            </th>
 
-                            <th>
+                            <!-- E-MAIL -->
 
-                                Telefone
+                            <td>
 
-                            </th>
+                                {{ usuario['email'] }}
 
-                            <th>
+                            </td>
 
-                                Turma
 
-                            </th>
 
-                            <th>
+                            <!-- TIPO -->
 
-                                Ações
+                            <td>
 
-                            </th>
 
-                        </tr>
+                                {% if usuario['tipo'] == 'gestao' %}
 
-                    </thead>
+                                    <span class="badge">
 
+                                        Gestão
 
+                                    </span>
 
-                    <tbody>
+                                {% elif usuario['tipo'] == 'professor' %}
 
+                                    <span class="badge">
 
-                        {% for usuario in usuarios %}
+                                        Professor
 
+                                    </span>
 
-                            <tr>
+                                {% else %}
 
+                                    <span class="badge">
 
-                                <!-- NOME -->
+                                        Aluno
 
-                                <td>
+                                    </span>
 
-                                    <strong>
+                                {% endif %}
 
-                                        {{ usuario['nome'] }}
 
-                                    </strong>
+                            </td>
 
-                                </td>
 
 
+                            <!-- TELEFONE -->
 
-                                <!-- E-MAIL -->
+                            <td>
 
-                                <td>
+                                {{ usuario['telefone'] or '-' }}
 
-                                    {{ usuario['email'] }}
+                            </td>
 
-                                </td>
 
 
+                            <!-- TURMA -->
 
-                                <!-- TIPO -->
+                            <td>
 
-                                <td>
+                                {{ usuario['turma'] or '-' }}
 
+                            </td>
 
-                                    {% if usuario['tipo'] == 'gestao' %}
 
-                                        <span class="badge">
 
-                                            Gestão
+                            <!-- AÇÕES -->
 
-                                        </span>
+                            <td>
 
-                                    {% elif usuario['tipo'] == 'professor' %}
 
-                                        <span class="badge">
+                                <div class="table-actions">
 
-                                            Professor
 
-                                        </span>
+                                    <a
+                                        href="{{ url_for('editar_usuario', id=usuario['id']) }}"
+                                        class="btn-edit"
+                                    >
 
-                                    {% else %}
+                                        ✏️ Editar
 
-                                        <span class="badge">
+                                    </a>
 
-                                            Aluno
 
-                                        </span>
 
-                                    {% endif %}
-
-
-                                </td>
-
-
-
-                                <!-- TELEFONE -->
-
-                                <td>
-
-                                    {{ usuario['telefone'] or '-' }}
-
-                                </td>
-
-
-
-                                <!-- TURMA -->
-
-                                <td>
-
-                                    {{ usuario['turma'] or '-' }}
-
-                                </td>
-
-
-
-                                <!-- AÇÕES -->
-
-                                <td>
-
-
-                                    <div class="table-actions">
+                                    {% if usuario['id'] != session['usuario_id'] %}
 
 
                                         <a
-                                            href="{{ url_for('editar_usuario', id=usuario['id']) }}"
-                                            class="btn-edit"
+                                            href="{{ url_for('excluir_usuario', id=usuario['id']) }}"
+                                            class="btn-delete"
+                                            onclick="return confirm('Tem certeza que deseja excluir este usuário?');"
                                         >
 
-                                            ✏️ Editar
+                                            🗑️ Excluir
 
                                         </a>
 
 
-
-                                        {% if usuario['id'] != session['usuario_id'] %}
-
-
-                                            <a
-                                                href="{{ url_for('excluir_usuario', id=usuario['id']) }}"
-                                                class="btn-delete"
-                                                onclick="return confirm('Tem certeza que deseja excluir este usuário?');"
-                                            >
-
-                                                🗑️ Excluir
-
-                                            </a>
+                                    {% else %}
 
 
-                                        {% else %}
+                                        <span class="current-user">
+
+                                            Usuário atual
+
+                                        </span>
 
 
-                                            <span class="current-user">
-
-                                                Usuário atual
-
-                                            </span>
+                                    {% endif %}
 
 
-                                        {% endif %}
+                                </div>
 
 
-                                    </div>
+                            </td>
 
 
-                                </td>
+                        </tr>
 
 
-                            </tr>
+                    {% endfor %}
 
 
-                        {% endfor %}
+                </tbody>
 
 
-                    </tbody>
+            </table>
 
 
-                </table>
+        </div>
 
 
-            </div>
-
-
-        {% else %}
-
-
-            <div class="empty-message">
-
-
-                <div class="empty-icon">
-
-                    👥
-
-                </div>
-
-
-                <strong>
-
-                    Nenhum usuário cadastrado
-
-                </strong>
-
-
-                <span>
-
-                    Cadastre o primeiro usuário
-                    utilizando o formulário acima.
-
-                </span>
-
-
-            </div>
-
-
-        {% endif %}
-
-
-    </section>
-
-
-
-    <!-- =========================================
-         INFORMAÇÃO
-    ========================================== -->
-
-    <section class="content-card">
+    {% else %}
 
 
         <div class="empty-message">
@@ -642,23 +605,22 @@
 
             <div class="empty-icon">
 
-                🔐
+                👥
 
             </div>
 
 
             <strong>
 
-                Gestão segura de usuários
+                Nenhum usuário cadastrado
 
             </strong>
 
 
             <span>
 
-                O sistema permite que a Gestão Escolar
-                controle os usuários e seus respectivos
-                perfis de acesso.
+                Cadastre o primeiro usuário
+                utilizando o formulário acima.
 
             </span>
 
@@ -666,13 +628,55 @@
         </div>
 
 
-    </section>
+    {% endif %}
 
+
+</section>
+
+
+
+<!-- =========================================
+     INFORMAÇÃO
+========================================== -->
+
+<section class="content-card">
+
+
+    <div class="empty-message">
+
+
+        <div class="empty-icon">
+
+            🔐
+
+        </div>
+
+
+        <strong>
+
+            Gestão segura de usuários
+
+        </strong>
+
+
+        <span>
+
+            O sistema gera automaticamente uma senha
+            inicial segura para cada novo usuário.
+            A senha é exibida somente no momento
+            do cadastro.
+
+        </span>
+
+
+    </div>
+
+
+</section>
+```
 
 </main>
-
 
 </body>
 
 </html>
-
