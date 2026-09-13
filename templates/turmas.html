@@ -1,5 +1,5 @@
-
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
@@ -17,6 +17,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -44,7 +47,9 @@
 
         <h2>
 
-            🏫 Turmas
+            <i data-lucide="school"></i>
+
+            Turmas
 
         </h2>
 
@@ -75,21 +80,26 @@
 
                     <div class="flash-message {{ categoria }}">
 
+
                         {% if categoria == "success" %}
 
-                            ✅
+                            <i data-lucide="circle-check"></i>
+
 
                         {% elif categoria == "danger" %}
 
-                            ❌
+                            <i data-lucide="circle-x"></i>
+
 
                         {% elif categoria == "warning" %}
 
-                            ⚠️
+                            <i data-lucide="triangle-alert"></i>
+
 
                         {% else %}
 
-                            ℹ️
+                            <i data-lucide="circle-info"></i>
+
 
                         {% endif %}
 
@@ -99,6 +109,7 @@
                             {{ mensagem }}
 
                         </span>
+
 
                     </div>
 
@@ -127,7 +138,9 @@
 
                 <h3>
 
-                    ➕ Cadastrar nova turma
+                    <i data-lucide="plus-circle"></i>
+
+                    Cadastrar nova turma
 
                 </h3>
 
@@ -293,7 +306,9 @@
                 class="btn-login"
             >
 
-                🏫 Cadastrar turma
+                <i data-lucide="school"></i>
+
+                Cadastrar turma
 
             </button>
 
@@ -320,7 +335,9 @@
 
                 <h3>
 
-                    📋 Turmas cadastradas
+                    <i data-lucide="clipboard-list"></i>
+
+                    Turmas cadastradas
 
                 </h3>
 
@@ -503,7 +520,9 @@
                                             class="btn-edit"
                                         >
 
-                                            👁️ Ver turma
+                                            <i data-lucide="eye"></i>
+
+                                            Ver turma
 
                                         </a>
 
@@ -514,7 +533,9 @@
                                             class="btn-edit"
                                         >
 
-                                            ✏️ Editar
+                                            <i data-lucide="pencil"></i>
+
+                                            Editar
 
                                         </a>
 
@@ -526,7 +547,9 @@
                                             onclick="return confirm('Deseja realmente excluir esta turma?');"
                                         >
 
-                                            🗑️ Excluir
+                                            <i data-lucide="trash-2"></i>
+
+                                            Excluir
 
                                         </a>
 
@@ -560,7 +583,7 @@
 
                 <div class="empty-icon">
 
-                    🏫
+                    <i data-lucide="school"></i>
 
                 </div>
 
@@ -602,7 +625,7 @@
 
             <div class="empty-icon">
 
-                🎓
+                <i data-lucide="graduation-cap"></i>
 
             </div>
 
@@ -630,6 +653,18 @@
 
 
 </main>
+
+
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
 
 
 </body>

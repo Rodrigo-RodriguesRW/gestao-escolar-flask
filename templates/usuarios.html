@@ -4,12 +4,12 @@
 
 <head>
 
-
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>Usuários | Gestão Escolar</title>
@@ -19,6 +19,9 @@
     href="{{ url_for('static', filename='style.css') }}"
 >
 
+<!-- Lucide Icons -->
+
+<script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -32,29 +35,30 @@
 
 <main class="dashboard">
 
-
 <!-- =========================================
      TÍTULO
 ========================================== -->
 
 <div class="dashboard-title">
 
-    <h2>
 
-        👥 Usuários
+<h2>
 
-    </h2>
+    <i data-lucide="users"></i>
 
-    <p>
+    Usuários
 
-        Cadastre, edite e gerencie os usuários
-        da comunidade escolar.
+</h2>
 
-    </p>
+<p>
+
+    Cadastre, edite e gerencie os usuários
+    da comunidade escolar.
+
+</p>
+
 
 </div>
-
-
 
 <!-- =========================================
      MENSAGENS DO SISTEMA
@@ -62,50 +66,49 @@
 
 {% with mensagens = get_flashed_messages(with_categories=true) %}
 
-    {% if mensagens %}
 
-        <div class="flash-messages">
+{% if mensagens %}
 
-            {% for categoria, mensagem in mensagens %}
+    <div class="flash-messages">
 
-                <div class="flash-message {{ categoria }}">
+        {% for categoria, mensagem in mensagens %}
 
-                    {% if categoria == "success" %}
+            <div class="flash-message {{ categoria }}">
 
-                        ✅
+                {% if categoria == "success" %}
 
-                    {% elif categoria == "danger" or categoria == "error" %}
+                    <i data-lucide="circle-check"></i>
 
-                        ❌
+                {% elif categoria == "danger" or categoria == "error" %}
 
-                    {% elif categoria == "warning" %}
+                    <i data-lucide="circle-x"></i>
 
-                        ⚠️
+                {% elif categoria == "warning" %}
 
-                    {% else %}
+                    <i data-lucide="triangle-alert"></i>
 
-                        ℹ️
+                {% else %}
 
-                    {% endif %}
+                    <i data-lucide="circle-info"></i>
 
+                {% endif %}
 
-                    <span>
+                <span>
 
-                        {{ mensagem }}
+                    {{ mensagem }}
 
-                    </span>
+                </span>
 
-                </div>
+            </div>
 
-            {% endfor %}
+        {% endfor %}
 
-        </div>
+    </div>
 
-    {% endif %}
+{% endif %}
+```
 
 {% endwith %}
-
-
 
 <!-- =========================================
      CADASTRO
@@ -114,238 +117,242 @@
 <section class="content-card">
 
 
-    <div class="section-header">
+<div class="section-header">
 
-        <div>
+    <div>
 
-            <h3>
+        <h3>
 
-                ➕ Cadastrar novo usuário
+            <i data-lucide="user-plus"></i>
 
-            </h3>
+            Cadastrar novo usuário
 
-            <p>
+        </h3>
 
-                Preencha os dados para cadastrar
-                um novo integrante da comunidade escolar.
+        <p>
 
-            </p>
+            Preencha os dados para cadastrar
+            um novo integrante da comunidade escolar.
+
+        </p>
+
+    </div>
+
+</div>
+
+
+
+<form method="POST">
+
+
+    <!-- NOME / E-MAIL -->
+
+    <div class="form-row">
+
+
+        <div class="form-group">
+
+            <label for="nome">
+
+                Nome completo
+
+            </label>
+
+            <input
+                type="text"
+                id="nome"
+                name="nome"
+                placeholder="Digite o nome completo"
+                required
+            >
 
         </div>
+
+
+
+        <div class="form-group">
+
+            <label for="email">
+
+                E-mail
+
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="exemplo@ete.com"
+                required
+            >
+
+        </div>
+
 
     </div>
 
 
 
-    <form method="POST">
+    <!-- TIPO / TELEFONE -->
+
+    <div class="form-row">
 
 
-        <!-- NOME / E-MAIL -->
+        <div class="form-group">
 
-        <div class="form-row">
+            <label for="tipo">
 
+                Tipo de usuário
 
-            <div class="form-group">
+            </label>
 
-                <label for="nome">
+            <select
+                id="tipo"
+                name="tipo"
+                required
+            >
 
-                    Nome completo
+                <option value="">
 
-                </label>
+                    Selecione o tipo
 
-                <input
-                    type="text"
-                    id="nome"
-                    name="nome"
-                    placeholder="Digite o nome completo"
-                    required
-                >
+                </option>
 
-            </div>
+                <option value="gestao">
 
+                    Gestão
 
+                </option>
 
-            <div class="form-group">
+                <option value="professor">
 
-                <label for="email">
+                    Professor
 
-                    E-mail
+                </option>
 
-                </label>
+                <option value="aluno">
 
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="exemplo@ete.com"
-                    required
-                >
+                    Aluno
 
-            </div>
+                </option>
 
+            </select>
 
         </div>
 
 
 
-        <!-- TIPO / TELEFONE -->
+        <div class="form-group">
 
-        <div class="form-row">
+            <label for="telefone">
+
+                Telefone
+
+            </label>
+
+            <input
+                type="text"
+                id="telefone"
+                name="telefone"
+                placeholder="(87) 99999-9999"
+            >
+
+        </div>
 
 
-            <div class="form-group">
+    </div>
 
-                <label for="tipo">
 
-                    Tipo de usuário
 
-                </label>
+    <!-- TURMA / SENHA -->
 
-                <select
-                    id="tipo"
-                    name="tipo"
-                    required
-                >
+    <div class="form-row">
 
-                    <option value="">
 
-                        Selecione o tipo
+        <div class="form-group">
+
+            <label for="turma">
+
+                Turma
+
+            </label>
+
+            <select
+                id="turma"
+                name="turma"
+            >
+
+                <option value="">
+
+                    Nenhuma turma
+
+                </option>
+
+
+                {% for turma in turmas %}
+
+                    <option value="{{ turma['nome'] }}">
+
+                        {{ turma['nome'] }}
+                        -
+                        {{ turma['curso'] }}
 
                     </option>
 
-                    <option value="gestao">
+                {% endfor %}
 
-                        Gestão
-
-                    </option>
-
-                    <option value="professor">
-
-                        Professor
-
-                    </option>
-
-                    <option value="aluno">
-
-                        Aluno
-
-                    </option>
-
-                </select>
-
-            </div>
-
-
-
-            <div class="form-group">
-
-                <label for="telefone">
-
-                    Telefone
-
-                </label>
-
-                <input
-                    type="text"
-                    id="telefone"
-                    name="telefone"
-                    placeholder="(87) 99999-9999"
-                >
-
-            </div>
-
+            </select>
 
         </div>
 
 
 
-        <!-- TURMA / SENHA -->
+        <div class="form-group">
 
-        <div class="form-row">
+            <label>
 
+                <i data-lucide="lock-keyhole"></i>
 
-            <div class="form-group">
+                Senha inicial
 
-                <label for="turma">
+            </label>
 
-                    Turma
+            <input
+                type="text"
+                value="Gerada automaticamente"
+                disabled
+            >
 
-                </label>
+            <small>
 
-                <select
-                    id="turma"
-                    name="turma"
-                >
+                Uma senha segura será gerada
+                automaticamente após o cadastro.
 
-                    <option value="">
-
-                        Nenhuma turma
-
-                    </option>
-
-
-                    {% for turma in turmas %}
-
-                        <option value="{{ turma['nome'] }}">
-
-                            {{ turma['nome'] }}
-                            -
-                            {{ turma['curso'] }}
-
-                        </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
-
-
-
-            <div class="form-group">
-
-                <label>
-
-                    🔐 Senha inicial
-
-                </label>
-
-                <input
-                    type="text"
-                    value="Gerada automaticamente"
-                    disabled
-                >
-
-                <small>
-
-                    Uma senha segura será gerada
-                    automaticamente após o cadastro.
-
-                </small>
-
-            </div>
-
+            </small>
 
         </div>
 
 
-
-        <button
-            type="submit"
-            class="btn-login"
-        >
-
-            👤 Cadastrar usuário
-
-        </button>
+    </div>
 
 
-    </form>
+
+    <button
+        type="submit"
+        class="btn-login"
+    >
+
+        <i data-lucide="user-plus"></i>
+
+        Cadastrar usuário
+
+    </button>
+
+
+</form>
 
 
 </section>
-
-
 
 <!-- =========================================
      LISTA DE USUÁRIOS
@@ -354,30 +361,281 @@
 <section class="content-card users-list">
 
 
-    <div class="section-header">
+<div class="section-header">
 
 
-        <div>
+    <div>
 
-            <h3>
+        <h3>
 
-                📋 Usuários cadastrados
+            <i data-lucide="clipboard-list"></i>
 
-            </h3>
+            Usuários cadastrados
 
-            <p>
+        </h3>
 
-                Consulte e gerencie os usuários
-                registrados no sistema.
+        <p>
 
-            </p>
+            Consulte e gerencie os usuários
+            registrados no sistema.
+
+        </p>
+
+    </div>
+
+
+    <span class="total-badge">
+
+        {{ usuarios|length }} usuário(s)
+
+    </span>
+
+
+</div>
+
+
+
+{% if usuarios %}
+
+
+    <div class="table-container">
+
+
+        <table>
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+
+                        Nome
+
+                    </th>
+
+                    <th>
+
+                        E-mail
+
+                    </th>
+
+                    <th>
+
+                        Tipo
+
+                    </th>
+
+                    <th>
+
+                        Telefone
+
+                    </th>
+
+                    <th>
+
+                        Turma
+
+                    </th>
+
+                    <th>
+
+                        Ações
+
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+                {% for usuario in usuarios %}
+
+
+                    <tr>
+
+
+                        <!-- NOME -->
+
+                        <td>
+
+                            <strong>
+
+                                {{ usuario['nome'] }}
+
+                            </strong>
+
+                        </td>
+
+
+
+                        <!-- E-MAIL -->
+
+                        <td>
+
+                            {{ usuario['email'] }}
+
+                        </td>
+
+
+
+                        <!-- TIPO -->
+
+                        <td>
+
+
+                            {% if usuario['tipo'] == 'gestao' %}
+
+                                <span class="badge">
+
+                                    Gestão
+
+                                </span>
+
+                            {% elif usuario['tipo'] == 'professor' %}
+
+                                <span class="badge">
+
+                                    Professor
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge">
+
+                                    Aluno
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+
+                        <!-- TELEFONE -->
+
+                        <td>
+
+                            {{ usuario['telefone'] or '-' }}
+
+                        </td>
+
+
+
+                        <!-- TURMA -->
+
+                        <td>
+
+                            {{ usuario['turma'] or '-' }}
+
+                        </td>
+
+
+
+                        <!-- AÇÕES -->
+
+                        <td>
+
+
+                            <div class="table-actions">
+
+
+                                <a
+                                    href="{{ url_for('editar_usuario', id=usuario['id']) }}"
+                                    class="btn-edit"
+                                >
+
+                                    <i data-lucide="pencil"></i>
+
+                                    Editar
+
+                                </a>
+
+
+
+                                {% if usuario['id'] != session['usuario_id'] %}
+
+
+                                    <a
+                                        href="{{ url_for('excluir_usuario', id=usuario['id']) }}"
+                                        class="btn-delete"
+                                        onclick="return confirm('Tem certeza que deseja excluir este usuário?');"
+                                    >
+
+                                        <i data-lucide="trash-2"></i>
+
+                                        Excluir
+
+                                    </a>
+
+
+                                {% else %}
+
+
+                                    <span class="current-user">
+
+                                        <i data-lucide="user"></i>
+
+                                        Usuário atual
+
+                                    </span>
+
+
+                                {% endif %}
+
+
+                            </div>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                {% endfor %}
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+{% else %}
+
+
+    <div class="empty-message">
+
+
+        <div class="empty-icon">
+
+            <i data-lucide="users"></i>
 
         </div>
 
 
-        <span class="total-badge">
+        <strong>
 
-            {{ usuarios|length }} usuário(s)
+            Nenhum usuário cadastrado
+
+        </strong>
+
+
+        <span>
+
+            Cadastre o primeiro usuário
+            utilizando o formulário acima.
 
         </span>
 
@@ -385,255 +643,10 @@
     </div>
 
 
-
-    {% if usuarios %}
-
-
-        <div class="table-container">
-
-
-            <table>
-
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-
-                            Nome
-
-                        </th>
-
-                        <th>
-
-                            E-mail
-
-                        </th>
-
-                        <th>
-
-                            Tipo
-
-                        </th>
-
-                        <th>
-
-                            Telefone
-
-                        </th>
-
-                        <th>
-
-                            Turma
-
-                        </th>
-
-                        <th>
-
-                            Ações
-
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-
-                <tbody>
-
-
-                    {% for usuario in usuarios %}
-
-
-                        <tr>
-
-
-                            <!-- NOME -->
-
-                            <td>
-
-                                <strong>
-
-                                    {{ usuario['nome'] }}
-
-                                </strong>
-
-                            </td>
-
-
-
-                            <!-- E-MAIL -->
-
-                            <td>
-
-                                {{ usuario['email'] }}
-
-                            </td>
-
-
-
-                            <!-- TIPO -->
-
-                            <td>
-
-
-                                {% if usuario['tipo'] == 'gestao' %}
-
-                                    <span class="badge">
-
-                                        Gestão
-
-                                    </span>
-
-                                {% elif usuario['tipo'] == 'professor' %}
-
-                                    <span class="badge">
-
-                                        Professor
-
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge">
-
-                                        Aluno
-
-                                    </span>
-
-                                {% endif %}
-
-
-                            </td>
-
-
-
-                            <!-- TELEFONE -->
-
-                            <td>
-
-                                {{ usuario['telefone'] or '-' }}
-
-                            </td>
-
-
-
-                            <!-- TURMA -->
-
-                            <td>
-
-                                {{ usuario['turma'] or '-' }}
-
-                            </td>
-
-
-
-                            <!-- AÇÕES -->
-
-                            <td>
-
-
-                                <div class="table-actions">
-
-
-                                    <a
-                                        href="{{ url_for('editar_usuario', id=usuario['id']) }}"
-                                        class="btn-edit"
-                                    >
-
-                                        ✏️ Editar
-
-                                    </a>
-
-
-
-                                    {% if usuario['id'] != session['usuario_id'] %}
-
-
-                                        <a
-                                            href="{{ url_for('excluir_usuario', id=usuario['id']) }}"
-                                            class="btn-delete"
-                                            onclick="return confirm('Tem certeza que deseja excluir este usuário?');"
-                                        >
-
-                                            🗑️ Excluir
-
-                                        </a>
-
-
-                                    {% else %}
-
-
-                                        <span class="current-user">
-
-                                            Usuário atual
-
-                                        </span>
-
-
-                                    {% endif %}
-
-
-                                </div>
-
-
-                            </td>
-
-
-                        </tr>
-
-
-                    {% endfor %}
-
-
-                </tbody>
-
-
-            </table>
-
-
-        </div>
-
-
-    {% else %}
-
-
-        <div class="empty-message">
-
-
-            <div class="empty-icon">
-
-                👥
-
-            </div>
-
-
-            <strong>
-
-                Nenhum usuário cadastrado
-
-            </strong>
-
-
-            <span>
-
-                Cadastre o primeiro usuário
-                utilizando o formulário acima.
-
-            </span>
-
-
-        </div>
-
-
-    {% endif %}
+{% endif %}
 
 
 </section>
-
-
 
 <!-- =========================================
      INFORMAÇÃO
@@ -642,40 +655,49 @@
 <section class="content-card">
 
 
-    <div class="empty-message">
+<div class="empty-message">
 
 
-        <div class="empty-icon">
+    <div class="empty-icon">
 
-            🔐
-
-        </div>
-
-
-        <strong>
-
-            Gestão segura de usuários
-
-        </strong>
-
-
-        <span>
-
-            O sistema gera automaticamente uma senha
-            inicial segura para cada novo usuário.
-            A senha é exibida somente no momento
-            do cadastro.
-
-        </span>
-
+        <i data-lucide="shield-check"></i>
 
     </div>
 
 
+    <strong>
+
+        Gestão segura de usuários
+
+    </strong>
+
+
+    <span>
+
+        O sistema gera automaticamente uma senha
+        inicial segura para cada novo usuário.
+        A senha é exibida somente no momento
+        do cadastro.
+
+    </span>
+
+
+</div>
+
+
 </section>
 
-
 </main>
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
 
 </body>
 

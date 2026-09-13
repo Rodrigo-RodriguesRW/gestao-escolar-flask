@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -17,6 +16,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -45,7 +47,9 @@
 
         <h2>
 
-            📢 Avisos da Escola
+            <i data-lucide="megaphone"></i>
+
+            Avisos da Escola
 
         </h2>
 
@@ -77,15 +81,16 @@
 
                 <h3>
 
-                    ➕ Publicar novo aviso
+                    <i data-lucide="plus-circle"></i>
+
+                    Publicar novo aviso
 
                 </h3>
 
 
                 <p>
 
-                    Crie um comunicado para informar
-                    professores e alunos.
+                    Escolha quem deverá receber o comunicado.
 
                 </p>
 
@@ -95,7 +100,9 @@
 
             <span class="total-badge">
 
-                📢 Gestão
+                <i data-lucide="megaphone"></i>
+
+                Gestão
 
             </span>
 
@@ -124,9 +131,112 @@
                     id="titulo"
                     name="titulo"
                     placeholder="Ex.: Reunião de pais e responsáveis"
-                    maxlength="150"
+                    maxlength="200"
                     required
                 >
+
+
+            </div>
+
+
+
+            <!-- DESTINO -->
+
+            <div class="form-group">
+
+
+                <label for="destino">
+
+                    Destinatários do aviso
+
+                </label>
+
+
+                <select
+                    id="destino"
+                    name="destino"
+                    required
+                >
+
+                    <option value="todos">
+
+                        👥 Todos
+
+                    </option>
+
+
+                    <option value="professores">
+
+                        👨‍🏫 Somente professores
+
+                    </option>
+
+
+                    <option value="alunos">
+
+                        🎓 Somente alunos
+
+                    </option>
+
+
+                    <option value="turma">
+
+                        🏫 Turma específica
+
+                    </option>
+
+
+                </select>
+
+
+            </div>
+
+
+
+            <!-- TURMA -->
+
+            <div class="form-group">
+
+
+                <label for="turma">
+
+                    Turma específica
+
+                </label>
+
+
+                <select
+                    id="turma"
+                    name="turma"
+                >
+
+                    <option value="">
+
+                        Selecione uma turma
+
+                    </option>
+
+
+                    {% for turma in turmas %}
+
+                        <option value="{{ turma['nome'] }}">
+
+                            {{ turma['nome'] }}
+
+                        </option>
+
+                    {% endfor %}
+
+
+                </select>
+
+
+                <small>
+
+                    Preencha este campo somente quando
+                    o destinatário for uma turma específica.
+
+                </small>
 
 
             </div>
@@ -149,6 +259,7 @@
                     id="mensagem"
                     name="mensagem"
                     rows="6"
+                    maxlength="5000"
                     placeholder="Digite aqui o comunicado..."
                     required
                 ></textarea>
@@ -168,7 +279,9 @@
                     class="btn-login"
                 >
 
-                    📢 Publicar aviso
+                    <i data-lucide="megaphone"></i>
+
+                    Publicar aviso
 
                 </button>
 
@@ -198,15 +311,16 @@
 
                 <h3>
 
-                    📋 Avisos publicados
+                    <i data-lucide="clipboard-list"></i>
+
+                    Avisos publicados
 
                 </h3>
 
 
                 <p>
 
-                    Comunicados disponíveis para
-                    professores e alunos.
+                    Comunicados cadastrados pela Gestão Escolar.
 
                 </p>
 
@@ -249,20 +363,63 @@
 
                                 <h4>
 
-                                    📢 {{ aviso['titulo'] }}
+                                    <i data-lucide="megaphone"></i>
+
+                                    {{ aviso['titulo'] }}
 
                                 </h4>
 
 
                                 <small>
 
-                                    📅 Publicado em
+                                    <i data-lucide="calendar-days"></i>
+
+                                    Publicado em
                                     {{ aviso['data'] }}
 
                                 </small>
 
 
                             </div>
+
+
+                        </div>
+
+
+
+                        <!-- =================================
+                             DESTINO
+                        ================================== -->
+
+                        <div class="aviso-destino">
+
+
+                            <strong>
+
+                                <i data-lucide="users"></i>
+
+                                Destinatário:
+
+                            </strong>
+
+
+                            {% if aviso['destino'] == 'todos' %}
+
+                                Todos
+
+                            {% elif aviso['destino'] == 'professores' %}
+
+                                Somente professores
+
+                            {% elif aviso['destino'] == 'alunos' %}
+
+                                Somente alunos
+
+                            {% elif aviso['destino'] == 'turma' %}
+
+                                Turma: {{ aviso['turma'] }}
+
+                            {% endif %}
 
 
                         </div>
@@ -299,7 +456,9 @@
                                 class="btn-edit"
                             >
 
-                                ✏️ Editar
+                                <i data-lucide="pencil"></i>
+
+                                Editar
 
                             </a>
 
@@ -310,7 +469,9 @@
                                 onclick="return confirm('Tem certeza que deseja excluir este aviso?');"
                             >
 
-                                🗑️ Excluir
+                                <i data-lucide="trash-2"></i>
+
+                                Excluir
 
                             </a>
 
@@ -339,7 +500,7 @@
 
                 <div class="empty-icon">
 
-                    📢
+                    <i data-lucide="megaphone"></i>
 
                 </div>
 
@@ -384,15 +545,17 @@
 
                 <h3>
 
-                    🔄 Como funciona
+                    <i data-lucide="refresh-cw"></i>
+
+                    Como funciona
 
                 </h3>
 
 
                 <p>
 
-                    Os avisos são compartilhados
-                    automaticamente pelo sistema.
+                    Os avisos são exibidos automaticamente
+                    conforme o destinatário selecionado.
 
                 </p>
 
@@ -414,7 +577,7 @@
 
                 <div class="dashboard-card-icon">
 
-                    👨‍💼
+                    <i data-lucide="briefcase-business"></i>
 
                 </div>
 
@@ -450,7 +613,7 @@
 
                 <div class="dashboard-card-icon">
 
-                    👨‍🏫
+                    <i data-lucide="presentation"></i>
 
                 </div>
 
@@ -467,7 +630,7 @@
 
                     <strong>
 
-                        Visualiza
+                        Recebe avisos destinados a ele
 
                     </strong>
 
@@ -486,7 +649,7 @@
 
                 <div class="dashboard-card-icon">
 
-                    🎓
+                    <i data-lucide="graduation-cap"></i>
 
                 </div>
 
@@ -503,7 +666,7 @@
 
                     <strong>
 
-                        Visualiza
+                        Recebe avisos da sua turma
 
                     </strong>
 
@@ -533,7 +696,7 @@
 
             <div class="empty-icon">
 
-                🔐
+                <i data-lucide="shield-check"></i>
 
             </div>
 
@@ -549,8 +712,9 @@
 
                 Somente usuários com perfil de Gestão
                 podem criar, editar ou excluir avisos.
-                Professores e alunos possuem acesso
-                somente à visualização.
+                Professores e alunos visualizam somente
+                os comunicados destinados ao seu perfil
+                ou à sua turma.
 
             </span>
 
@@ -564,7 +728,18 @@
 </main>
 
 
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
 </body>
 
 </html>
-

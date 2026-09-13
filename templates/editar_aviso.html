@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -157,7 +156,9 @@
         <form method="POST">
 
 
-            <!-- TÍTULO -->
+            <!-- =========================================
+                 TÍTULO
+            ========================================== -->
 
             <div class="form-group">
 
@@ -182,7 +183,9 @@
 
 
 
-            <!-- MENSAGEM -->
+            <!-- =========================================
+                 MENSAGEM
+            ========================================== -->
 
             <div class="form-group">
 
@@ -206,7 +209,141 @@
 
 
 
-            <!-- BOTÕES -->
+            <!-- =========================================
+                 DESTINO
+            ========================================== -->
+
+            <div class="form-group">
+
+
+                <label for="destino">
+
+                    Destino do aviso
+
+                </label>
+
+
+                <select
+                    id="destino"
+                    name="destino"
+                    required
+                >
+
+                    <option
+                        value="todos"
+                        {% if aviso['destino'] == 'todos' or not aviso['destino'] %}
+                            selected
+                        {% endif %}
+                    >
+
+                        👥 Todos
+
+                    </option>
+
+
+                    <option
+                        value="professores"
+                        {% if aviso['destino'] == 'professores' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        👨‍🏫 Somente professores
+
+                    </option>
+
+
+                    <option
+                        value="alunos"
+                        {% if aviso['destino'] == 'alunos' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        🎓 Somente alunos
+
+                    </option>
+
+
+                    <option
+                        value="turma"
+                        {% if aviso['destino'] == 'turma' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        🏫 Turma específica
+
+                    </option>
+
+
+                </select>
+
+
+            </div>
+
+
+
+            <!-- =========================================
+                 TURMA
+            ========================================== -->
+
+            <div class="form-group">
+
+
+                <label for="turma">
+
+                    Turma específica
+
+                </label>
+
+
+                <select
+                    id="turma"
+                    name="turma"
+                >
+
+                    <option value="">
+
+                        Selecione uma turma
+
+                    </option>
+
+
+                    {% for turma in turmas %}
+
+                        <option
+                            value="{{ turma['nome'] }}"
+                            {% if aviso['turma'] == turma['nome'] %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ turma['nome'] }}
+
+                        </option>
+
+                    {% endfor %}
+
+
+                </select>
+
+
+                <small>
+
+                    Esta opção será utilizada somente
+                    quando o destino for uma turma específica.
+
+                </small>
+
+
+            </div>
+
+
+
+            <!-- =========================================
+                 BOTÕES
+            ========================================== -->
 
             <div class="form-buttons">
 
@@ -319,6 +456,44 @@
             </div>
 
 
+
+            <!-- =========================================
+                 DESTINO NA PRÉ-VISUALIZAÇÃO
+            ========================================== -->
+
+            <div class="aviso-meta">
+
+
+                <small>
+
+                    🎯
+
+
+                    {% if aviso['destino'] == 'todos' or not aviso['destino'] %}
+
+                        Todos
+
+                    {% elif aviso['destino'] == 'professores' %}
+
+                        Somente professores
+
+                    {% elif aviso['destino'] == 'alunos' %}
+
+                        Somente alunos
+
+                    {% elif aviso['destino'] == 'turma' %}
+
+                        Turma: {{ aviso['turma'] }}
+
+                    {% endif %}
+
+
+                </small>
+
+
+            </div>
+
+
         </div>
 
 
@@ -372,4 +547,3 @@
 </body>
 
 </html>
-

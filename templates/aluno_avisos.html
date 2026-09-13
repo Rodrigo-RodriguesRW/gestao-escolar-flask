@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Avisos | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+
+            <i data-lucide="megaphone"></i>
+
+            Avisos da Escola
+
+        </h2>
+
+        <p>
+
+            Acompanhe os comunicados publicados
+            pela Gestão Escolar.
+
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         RESUMO
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="megaphone"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Avisos publicados
+
+                </span>
+
+                <strong>
+
+                    {{ avisos|length }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="graduation-cap"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Área do aluno
+
+                </span>
+
+                <strong>
+
+                    Aluno
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="school"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Gestão Escolar
+
+                </span>
+
+                <strong>
+
+                    Ativa
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =========================================
+         AVISOS
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    <i data-lucide="megaphone"></i>
+
+                    Comunicados da escola
+
+                </h3>
+
+                <p>
+
+                    Informações e comunicados publicados
+                    pela Gestão Escolar.
+
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ avisos|length }} aviso(s)
+
+            </span>
+
+        </div>
+
+
+        {% if avisos %}
+
+
+            <div class="avisos-container">
+
+
+                {% for aviso in avisos %}
+
+
+                    <div class="aviso-card">
+
+
+                        <div class="aviso-header">
+
+
+                            <div>
+
+                                <h4>
+
+                                    <i data-lucide="megaphone"></i>
+
+                                    {{ aviso['titulo'] }}
+
+                                </h4>
+
+
+                                <small>
+
+                                    <i data-lucide="calendar-days"></i>
+
+                                    {{ aviso['data'] }}
+
+                                </small>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="aviso-content">
+
+                            <p>
+
+                                {{ aviso['mensagem'] }}
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+
+                <div class="empty-icon">
+
+                    <i data-lucide="megaphone"></i>
+
+                </div>
+
+
+                <strong>
+
+                    Nenhum aviso publicado
+
+                </strong>
+
+
+                <span>
+
+                    Quando a Gestão Escolar publicar
+                    um comunicado, ele aparecerá aqui.
+
+                </span>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+    <!-- =========================================
+         ACESSO RÁPIDO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    <i data-lucide="zap"></i>
+
+                    Acesso rápido
+
+                </h3>
+
+                <p>
+
+                    Acesse outras áreas do seu
+                    painel escolar.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-actions">
+
+
+            <a
+                href="{{ url_for('aluno_turma') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    <i data-lucide="graduation-cap"></i>
+
+                </span>
+
+
+                <strong>
+
+                    Minha turma
+
+                </strong>
+
+
+                <small>
+
+                    Ver informações da minha turma
+
+                </small>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('aluno_professores') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    <i data-lucide="presentation"></i>
+
+                </span>
+
+
+                <strong>
+
+                    Professores
+
+                </strong>
+
+
+                <small>
+
+                    Ver professores da minha turma
+
+                </small>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="quick-action"
+            >
+
+                <span class="quick-action-icon">
+
+                    <i data-lucide="message-circle"></i>
+
+                </span>
+
+
+                <strong>
+
+                    Comunicação
+
+                </strong>
+
+
+                <small>
+
+                    Conversar com seus professores
+
+                </small>
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =========================================
+         BOTÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('aluno') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="house"></i>
+
+                Voltar ao meu painel
+
+            </a>
+
+
+            <a
+                href="{{ url_for('aluno_turma') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="graduation-cap"></i>
+
+                Minha turma
+
+            </a>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-secondary"
+            >
+
+                <i data-lucide="message-circle"></i>
+
+                Comunicação
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
+</body>
+
+</html>

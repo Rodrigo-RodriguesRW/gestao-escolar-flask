@@ -1,70 +1,363 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash,
+    abort
+)
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
 from banco import conectar
+
 from datetime import datetime
+
 import secrets
 import string
+import os
+import re
 
 
 app = Flask(__name__)
 
 
-# =========================================
-# CONFIGURAÇÃO DA SESSÃO
-# =========================================
+# ============================================================
+# CONFIGURAÇÃO DE SEGURANÇA
+# ============================================================
 
-app.secret_key = "ete-ariano-suassuna-gestao-escolar"
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    secrets.token_hex(32)
+)
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+app.config["SESSION_COOKIE_SECURE"] = False
 
 
-# =========================================
-# GERAR SENHA INICIAL
-# =========================================
+# ============================================================
+# CONSTANTES DE SEGURANÇA
+# ============================================================
 
-def gerar_senha_inicial():
+TIPOS_VALIDOS = {
+    "gestao",
+    "professor",
+    "aluno"
+}
 
-    caracteres = string.ascii_letters + string.digits
+TAMANHO_MAX_NOME = 100
+TAMANHO_MAX_EMAIL = 150
+TAMANHO_MAX_TELEFONE = 30
+TAMANHO_MAX_TURMA = 100
+TAMANHO_MAX_TITULO = 200
+TAMANHO_MAX_MENSAGEM = 5000
 
-    return "".join(
-        secrets.choice(caracteres)
-        for _ in range(8)
+DESTINOS_AVISO_VALIDOS = {
+    "todos",
+    "professores",
+    "alunos",
+    "turma"
+}
+
+
+# ============================================================
+# FUNÇÕES AUXILIARES
+# ============================================================
+
+def usuario_logado():
+
+    return "usuario_id" in session
+
+
+def exigir_login():
+
+    if not usuario_logado():
+
+        flash(
+            "Você precisa estar logado para acessar esta página.",
+            "error"
+        )
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    return None
+
+
+def exigir_tipo(tipo):
+
+    if not usuario_logado():
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    if session.get("usuario_tipo") != tipo:
+
+        flash(
+            "Você não tem permissão para acessar esta área.",
+            "error"
+        )
+
+        return redirecionar_usuario()
+
+    return None
+
+
+def redirecionar_usuario():
+
+    tipo = session.get("usuario_tipo")
+
+    if tipo == "gestao":
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    if tipo == "professor":
+
+        return redirect(
+            url_for("professor")
+        )
+
+    if tipo == "aluno":
+
+        return redirect(
+            url_for("aluno")
+        )
+
+    session.clear()
+
+    return redirect(
+        url_for("inicio")
     )
 
 
-# =========================================
+def limpar_texto(valor, tamanho_maximo):
+
+    if valor is None:
+
+        return ""
+
+    valor = str(valor).strip()
+
+    return valor[:tamanho_maximo]
+
+
+def email_valido(email):
+
+    if not email:
+        return False
+
+    if len(email) > TAMANHO_MAX_EMAIL:
+        return False
+
+    padrao = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+    return re.match(
+        padrao,
+        email
+    ) is not None
+
+
+def senha_valida(senha):
+
+    if not senha:
+        return False
+
+    if len(senha) < 8:
+        return False
+
+    if len(senha) > 128:
+        return False
+
+    return True
+
+
+def tipo_valido(tipo):
+
+    return tipo in TIPOS_VALIDOS
+
+
+def turma_existe(conexao, turma):
+
+    if not turma:
+
+        return True
+
+    resultado = conexao.execute(
+        """
+        SELECT id
+        FROM turmas
+        WHERE nome = ?
+        """,
+        (turma,)
+    ).fetchone()
+
+    return resultado is not None
+
+
+def gerar_senha_inicial():
+
+    caracteres = (
+        string.ascii_letters +
+        string.digits
+    )
+
+    return "".join(
+        secrets.choice(caracteres)
+        for _ in range(10)
+    )
+
+
+def buscar_usuario_atual():
+
+    if not usuario_logado():
+
+        return None
+
+    conexao = conectar()
+
+    try:
+
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (session["usuario_id"],)
+        ).fetchone()
+
+        return usuario
+
+    finally:
+
+        conexao.close()
+
+
+# ============================================================
+# PROTEÇÃO GLOBAL
+# ============================================================
+
+@app.before_request
+def protecao_global():
+
+    rotas_publicas = {
+        "inicio",
+        "static"
+    }
+
+    if request.endpoint in rotas_publicas:
+
+        return None
+
+    if not usuario_logado():
+
+        return None
+
+    usuario = buscar_usuario_atual()
+
+    if usuario is None:
+
+        session.clear()
+
+        flash(
+            "Sua sessão não é mais válida.",
+            "error"
+        )
+
+        return redirect(
+            url_for("inicio")
+        )
+
+    session["usuario_nome"] = usuario["nome"]
+    session["usuario_email"] = usuario["email"]
+    session["usuario_tipo"] = usuario["tipo"]
+
+    if (
+        usuario["primeiro_acesso"] == 1
+        and request.endpoint not in {
+            "trocar_senha",
+            "logout",
+            "static"
+        }
+    ):
+
+        return redirect(
+            url_for("trocar_senha")
+        )
+
+    return None
+
+
+# ============================================================
 # LOGIN
-# =========================================
+# ============================================================
 
 @app.route("/", methods=["GET", "POST"])
 def inicio():
 
     if request.method == "POST":
 
-        email = request.form["email"].strip()
-        senha = request.form["senha"].strip()
+        email = limpar_texto(
+            request.form.get("email"),
+            TAMANHO_MAX_EMAIL
+        ).lower()
+
+        senha = request.form.get(
+            "senha",
+            ""
+        )
+
+        if not email or not senha:
+
+            flash(
+                "Informe o e-mail e a senha.",
+                "error"
+            )
+
+            return render_template(
+                "login.html"
+            )
 
         conexao = conectar()
 
-        usuario = conexao.execute(
-            """
-            SELECT *
-            FROM usuarios
-            WHERE email = ?
-            """,
-            (email,)
-        ).fetchone()
+        try:
 
-        conexao.close()
+            usuario = conexao.execute(
+                """
+                SELECT *
+                FROM usuarios
+                WHERE email = ?
+                """,
+                (email,)
+            ).fetchone()
 
-        if usuario and check_password_hash(usuario["senha"], senha):
+        finally:
+
+            conexao.close()
+
+        if usuario and check_password_hash(
+            usuario["senha"],
+            senha
+        ):
+
+            session.clear()
 
             session["usuario_id"] = usuario["id"]
             session["usuario_nome"] = usuario["nome"]
             session["usuario_email"] = usuario["email"]
             session["usuario_tipo"] = usuario["tipo"]
-
-            # =========================================
-            # PRIMEIRO ACESSO
-            # =========================================
 
             if usuario["primeiro_acesso"] == 1:
 
@@ -72,31 +365,7 @@ def inicio():
                     url_for("trocar_senha")
                 )
 
-            # =========================================
-            # REDIRECIONAMENTO POR TIPO
-            # =========================================
-
-            if usuario["tipo"] == "gestao":
-
-                return redirect(
-                    url_for("dashboard")
-                )
-
-            if usuario["tipo"] == "professor":
-
-                return redirect(
-                    url_for("professor")
-                )
-
-            if usuario["tipo"] == "aluno":
-
-                return redirect(
-                    url_for("aluno")
-                )
-
-            return redirect(
-                url_for("dashboard")
-            )
+            return redirecionar_usuario()
 
         flash(
             "E-mail ou senha inválidos.",
@@ -108,14 +377,14 @@ def inicio():
     )
 
 
-# =========================================
+# ============================================================
 # PRIMEIRO ACESSO — TROCAR SENHA
-# =========================================
+# ============================================================
 
 @app.route("/trocar-senha", methods=["GET", "POST"])
 def trocar_senha():
 
-    if "usuario_id" not in session:
+    if not usuario_logado():
 
         return redirect(
             url_for("inicio")
@@ -123,144 +392,90 @@ def trocar_senha():
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
+    try:
 
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        """,
-        (usuario_id,)
-    ).fetchone()
+        usuario_id = session["usuario_id"]
 
-    if usuario is None:
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (usuario_id,)
+        ).fetchone()
 
-        conexao.close()
+        if usuario is None:
 
-        session.clear()
-
-        flash(
-            "Usuário não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("inicio")
-        )
-
-    # =========================================
-    # SE JÁ TROCOU A SENHA
-    # =========================================
-
-    if usuario["primeiro_acesso"] == 0:
-
-        conexao.close()
-
-        if usuario["tipo"] == "gestao":
-
-            return redirect(
-                url_for("dashboard")
-            )
-
-        if usuario["tipo"] == "professor":
-
-            return redirect(
-                url_for("professor")
-            )
-
-        if usuario["tipo"] == "aluno":
-
-            return redirect(
-                url_for("aluno")
-            )
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-    # =========================================
-    # PROCESSAR NOVA SENHA
-    # =========================================
-
-    if request.method == "POST":
-
-        nova_senha = request.form.get(
-            "nova_senha",
-            ""
-        ).strip()
-
-        confirmar_senha = request.form.get(
-            "confirmar_senha",
-            ""
-        ).strip()
-
-        # =========================================
-        # CAMPOS VAZIOS
-        # =========================================
-
-        if not nova_senha or not confirmar_senha:
-
-            conexao.close()
+            session.clear()
 
             flash(
-                "Preencha os dois campos de senha.",
+                "Usuário não encontrado.",
                 "error"
             )
 
-            return render_template(
-                "trocar_senha.html",
-                usuario_nome=session["usuario_nome"],
-                usuario_tipo=session["usuario_tipo"]
+            return redirect(
+                url_for("inicio")
             )
 
-        # =========================================
-        # SENHAS DIFERENTES
-        # =========================================
+        if usuario["primeiro_acesso"] == 0:
 
-        if nova_senha != confirmar_senha:
+            return redirecionar_usuario()
 
-            conexao.close()
+        if request.method == "POST":
 
-            flash(
-                "As senhas não são iguais.",
-                "error"
+            nova_senha = request.form.get(
+                "nova_senha",
+                ""
+            ).strip()
+
+            confirmar_senha = request.form.get(
+                "confirmar_senha",
+                ""
+            ).strip()
+
+            if not nova_senha or not confirmar_senha:
+
+                flash(
+                    "Preencha os dois campos de senha.",
+                    "error"
+                )
+
+                return render_template(
+                    "trocar_senha.html",
+                    usuario_nome=usuario["nome"],
+                    usuario_tipo=usuario["tipo"]
+                )
+
+            if nova_senha != confirmar_senha:
+
+                flash(
+                    "As senhas não são iguais.",
+                    "error"
+                )
+
+                return render_template(
+                    "trocar_senha.html",
+                    usuario_nome=usuario["nome"],
+                    usuario_tipo=usuario["tipo"]
+                )
+
+            if not senha_valida(nova_senha):
+
+                flash(
+                    "A nova senha deve possuir entre 8 e 128 caracteres.",
+                    "error"
+                )
+
+                return render_template(
+                    "trocar_senha.html",
+                    usuario_nome=usuario["nome"],
+                    usuario_tipo=usuario["tipo"]
+                )
+
+            senha_hash = generate_password_hash(
+                nova_senha
             )
-
-            return render_template(
-                "trocar_senha.html",
-                usuario_nome=session["usuario_nome"],
-                usuario_tipo=session["usuario_tipo"]
-            )
-
-        # =========================================
-        # TAMANHO DA SENHA
-        # =========================================
-
-        if len(nova_senha) < 6:
-
-            conexao.close()
-
-            flash(
-                "A nova senha deve possuir pelo menos 6 caracteres.",
-                "error"
-            )
-
-            return render_template(
-                "trocar_senha.html",
-                usuario_nome=session["usuario_nome"],
-                usuario_tipo=session["usuario_tipo"]
-            )
-
-        # =========================================
-        # GERAR HASH
-        # =========================================
-
-        senha_hash = generate_password_hash(
-            nova_senha
-        )
-
-        try:
 
             conexao.execute(
                 """
@@ -278,81 +493,34 @@ def trocar_senha():
 
             conexao.commit()
 
-            conexao.close()
+            session["usuario_nome"] = usuario["nome"]
+            session["usuario_email"] = usuario["email"]
+            session["usuario_tipo"] = usuario["tipo"]
 
             flash(
                 "Senha criada com sucesso!",
                 "success"
             )
 
-            # =========================================
-            # REDIRECIONAMENTO
-            # =========================================
+            return redirecionar_usuario()
 
-            if session["usuario_tipo"] == "gestao":
-
-                return redirect(
-                    url_for("dashboard")
-                )
-
-            if session["usuario_tipo"] == "professor":
-
-                return redirect(
-                    url_for("professor")
-                )
-
-            if session["usuario_tipo"] == "aluno":
-
-                return redirect(
-                    url_for("aluno")
-                )
-
-            return redirect(
-                url_for("dashboard")
-            )
-
-        except Exception as erro:
-
-            conexao.rollback()
-
-            print(
-                "Erro ao alterar senha:",
-                erro
-            )
-
-            conexao.close()
-
-            flash(
-                "Erro ao criar a nova senha.",
-                "error"
-            )
-
-    conexao.close()
-
-    return render_template(
-        "trocar_senha.html",
-        usuario_nome=session["usuario_nome"],
-        usuario_tipo=session["usuario_tipo"]
-    )
-
-
-# =========================================
-# DASHBOARD DA GESTÃO
-# =========================================
-
-@app.route("/dashboard")
-def dashboard():
-
-    if "usuario_id" not in session:
-
-        return redirect(
-            url_for("inicio")
+        return render_template(
+            "trocar_senha.html",
+            usuario_nome=usuario["nome"],
+            usuario_tipo=usuario["tipo"]
         )
 
-    if session.get("usuario_tipo") != "gestao":
+    except Exception as erro:
+
+        conexao.rollback()
+
+        print(
+            "Erro ao alterar senha:",
+            erro
+        )
 
         flash(
-            "Você não tem permissão para acessar o painel da gestão.",
+            "Erro ao criar a nova senha.",
             "error"
         )
 
@@ -360,46 +528,68 @@ def dashboard():
             url_for("inicio")
         )
 
+    finally:
+
+        conexao.close()
+
+
+# ============================================================
+# DASHBOARD DA GESTÃO
+# ============================================================
+
+@app.route("/dashboard")
+def dashboard():
+
+    acesso = exigir_tipo("gestao")
+
+    if acesso:
+
+        return acesso
+
     conexao = conectar()
 
-    total_usuarios = conexao.execute(
-        """
-        SELECT COUNT(*)
-        FROM usuarios
-        """
-    ).fetchone()[0]
+    try:
 
-    total_turmas = conexao.execute(
-        """
-        SELECT COUNT(*)
-        FROM turmas
-        """
-    ).fetchone()[0]
+        total_usuarios = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM usuarios
+            """
+        ).fetchone()[0]
 
-    total_alunos = conexao.execute(
-        """
-        SELECT COUNT(*)
-        FROM usuarios
-        WHERE tipo = 'aluno'
-        """
-    ).fetchone()[0]
+        total_turmas = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM turmas
+            """
+        ).fetchone()[0]
 
-    total_professores = conexao.execute(
-        """
-        SELECT COUNT(*)
-        FROM usuarios
-        WHERE tipo = 'professor'
-        """
-    ).fetchone()[0]
+        total_alunos = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM usuarios
+            WHERE tipo = 'aluno'
+            """
+        ).fetchone()[0]
 
-    total_avisos = conexao.execute(
-        """
-        SELECT COUNT(*)
-        FROM avisos
-        """
-    ).fetchone()[0]
+        total_professores = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM usuarios
+            WHERE tipo = 'professor'
+            """
+        ).fetchone()[0]
 
-    conexao.close()
+        total_avisos = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM avisos
+            """
+        ).fetchone()[0]
+
+    finally:
+
+        conexao.close()
 
     return render_template(
         "dashboard.html",
@@ -413,139 +603,187 @@ def dashboard():
     )
 
 
-# =========================================
+# ============================================================
 # USUÁRIOS
-# =========================================
+# ============================================================
 
 @app.route("/usuarios", methods=["GET", "POST"])
 def usuarios_page():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para acessar esta área.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    if request.method == "POST":
+    try:
 
-        nome = request.form["nome"].strip()
-        email = request.form["email"].strip()
-        tipo = request.form["tipo"]
+        if request.method == "POST":
 
-        telefone = request.form.get(
-            "telefone",
-            ""
-        ).strip()
+            nome = limpar_texto(
+                request.form.get("nome"),
+                TAMANHO_MAX_NOME
+            )
 
-        turma = request.form.get(
-            "turma",
-            ""
-        ).strip()
+            email = limpar_texto(
+                request.form.get("email"),
+                TAMANHO_MAX_EMAIL
+            ).lower()
 
-        senha_inicial = gerar_senha_inicial()
+            tipo = limpar_texto(
+                request.form.get("tipo"),
+                30
+            )
 
-        senha = generate_password_hash(
-            senha_inicial
-        )
+            telefone = limpar_texto(
+                request.form.get("telefone"),
+                TAMANHO_MAX_TELEFONE
+            )
 
-        try:
+            turma = limpar_texto(
+                request.form.get("turma"),
+                TAMANHO_MAX_TURMA
+            )
 
-            usuario_existente = conexao.execute(
-                """
-                SELECT id
-                FROM usuarios
-                WHERE email = ?
-                """,
-                (email,)
-            ).fetchone()
-
-            if usuario_existente:
+            if not nome:
 
                 flash(
-                    "Erro: já existe um usuário cadastrado com este e-mail.",
+                    "Informe o nome do usuário.",
+                    "error"
+                )
+
+            elif not email_valido(email):
+
+                flash(
+                    "Informe um e-mail válido.",
+                    "error"
+                )
+
+            elif not tipo_valido(tipo):
+
+                flash(
+                    "Tipo de usuário inválido.",
+                    "error"
+                )
+
+            elif not turma_existe(conexao, turma):
+
+                flash(
+                    "A turma informada não existe.",
                     "error"
                 )
 
             else:
 
-                conexao.execute(
+                usuario_existente = conexao.execute(
                     """
-                    INSERT INTO usuarios
-                    (
-                        nome,
-                        email,
-                        tipo,
-                        telefone,
-                        turma,
-                        senha,
-                        primeiro_acesso
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    SELECT id
+                    FROM usuarios
+                    WHERE email = ?
                     """,
-                    (
-                        nome,
-                        email,
-                        tipo,
-                        telefone,
-                        turma,
-                        senha,
-                        1
+                    (email,)
+                ).fetchone()
+
+                if usuario_existente:
+
+                    flash(
+                        "Erro: já existe um usuário cadastrado com este e-mail.",
+                        "error"
                     )
-                )
 
-                conexao.commit()
+                else:
 
-                flash(
-                    f"Usuário {nome} cadastrado com sucesso! "
-                    f"Senha inicial: {senha_inicial}. "
-                    f"Entregue esta senha ao usuário.",
-                    "success"
-                )
+                    senha_inicial = gerar_senha_inicial()
 
-        except Exception as erro:
+                    senha_hash = generate_password_hash(
+                        senha_inicial
+                    )
 
-            conexao.rollback()
+                    conexao.execute(
+                        """
+                        INSERT INTO usuarios
+                        (
+                            nome,
+                            email,
+                            tipo,
+                            telefone,
+                            turma,
+                            senha,
+                            primeiro_acesso
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            nome,
+                            email,
+                            tipo,
+                            telefone,
+                            turma,
+                            senha_hash,
+                            1
+                        )
+                    )
 
-            print(
-                "Erro ao cadastrar usuário:",
-                erro
-            )
+                    conexao.commit()
 
-            flash(
-                "Erro ao cadastrar usuário. Verifique os dados.",
-                "error"
-            )
+                    flash(
+                        f"Usuário {nome} cadastrado com sucesso! "
+                        f"Senha inicial: {senha_inicial}. "
+                        f"Entregue esta senha ao usuário.",
+                        "success"
+                    )
 
-    usuarios = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        ORDER BY id DESC
-        """
-    ).fetchall()
+        usuarios = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            ORDER BY id DESC
+            """
+        ).fetchall()
 
-    turmas = conexao.execute(
-        """
-        SELECT *
-        FROM turmas
-        ORDER BY nome
-        """
-    ).fetchall()
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
 
-    conexao.close()
+    except Exception as erro:
+
+        conexao.rollback()
+
+        print(
+            "Erro na área de usuários:",
+            erro
+        )
+
+        flash(
+            "Erro ao processar usuário.",
+            "error"
+        )
+
+        usuarios = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            ORDER BY id DESC
+            """
+        ).fetchall()
+
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
+
+    finally:
+
+        conexao.close()
 
     return render_template(
         "usuarios.html",
@@ -556,71 +794,128 @@ def usuarios_page():
     )
 
 
-# =========================================
+# ============================================================
 # EDITAR USUÁRIO
-# =========================================
+# ============================================================
 
-@app.route("/usuarios/editar/<int:id>", methods=["GET", "POST"])
+@app.route(
+    "/usuarios/editar/<int:id>",
+    methods=["GET", "POST"]
+)
 def editar_usuario(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para editar usuários.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
+    try:
 
-    if usuario is None:
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
 
-        conexao.close()
+        if usuario is None:
 
-        flash(
-            "Usuário não encontrado.",
-            "error"
-        )
+            flash(
+                "Usuário não encontrado.",
+                "error"
+            )
 
-        return redirect(
-            url_for("usuarios_page")
-        )
+            return redirect(
+                url_for("usuarios_page")
+            )
 
-    if request.method == "POST":
+        if request.method == "POST":
 
-        nome = request.form["nome"].strip()
-        email = request.form["email"].strip()
-        tipo = request.form["tipo"]
+            nome = limpar_texto(
+                request.form.get("nome"),
+                TAMANHO_MAX_NOME
+            )
 
-        telefone = request.form.get(
-            "telefone",
-            ""
-        ).strip()
+            email = limpar_texto(
+                request.form.get("email"),
+                TAMANHO_MAX_EMAIL
+            ).lower()
 
-        turma = request.form.get(
-            "turma",
-            ""
-        ).strip()
+            tipo = limpar_texto(
+                request.form.get("tipo"),
+                30
+            )
 
-        try:
+            telefone = limpar_texto(
+                request.form.get("telefone"),
+                TAMANHO_MAX_TELEFONE
+            )
+
+            turma = limpar_texto(
+                request.form.get("turma"),
+                TAMANHO_MAX_TURMA
+            )
+
+            if not nome:
+
+                flash(
+                    "Informe o nome do usuário.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+            if not email_valido(email):
+
+                flash(
+                    "Informe um e-mail válido.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+            if not tipo_valido(tipo):
+
+                flash(
+                    "Tipo de usuário inválido.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+            if not turma_existe(conexao, turma):
+
+                flash(
+                    "A turma informada não existe.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
 
             email_existente = conexao.execute(
                 """
@@ -629,7 +924,10 @@ def editar_usuario(id):
                 WHERE email = ?
                 AND id != ?
                 """,
-                (email, id)
+                (
+                    email,
+                    id
+                )
             ).fetchone()
 
             if email_existente:
@@ -639,7 +937,19 @@ def editar_usuario(id):
                     "error"
                 )
 
-                conexao.close()
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+            if tipo in ("aluno", "professor") and not turma:
+
+                flash(
+                    "Aluno e professor devem possuir uma turma vinculada.",
+                    "error"
+                )
 
                 return redirect(
                     url_for(
@@ -647,6 +957,33 @@ def editar_usuario(id):
                         id=id
                     )
                 )
+
+            if (
+                usuario["tipo"] == "gestao"
+                and tipo != "gestao"
+            ):
+
+                total_gestao = conexao.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM usuarios
+                    WHERE tipo = 'gestao'
+                    """
+                ).fetchone()[0]
+
+                if total_gestao <= 1:
+
+                    flash(
+                        "O sistema precisa possuir pelo menos um usuário da gestão.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "editar_usuario",
+                            id=id
+                        )
+                    )
 
             conexao.execute(
                 """
@@ -677,8 +1014,6 @@ def editar_usuario(id):
                 session["usuario_email"] = email
                 session["usuario_tipo"] = tipo
 
-            conexao.close()
-
             flash(
                 f"Usuário {nome} atualizado com sucesso!",
                 "success"
@@ -688,38 +1023,37 @@ def editar_usuario(id):
                 url_for("usuarios_page")
             )
 
-        except Exception as erro:
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
 
-            conexao.rollback()
+    except Exception as erro:
 
-            print(
-                "Erro ao editar usuário:",
-                erro
+        conexao.rollback()
+
+        print(
+            "Erro ao editar usuário:",
+            erro
+        )
+
+        flash(
+            "Erro ao atualizar usuário.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "usuarios_page"
             )
+        )
 
-            conexao.close()
+    finally:
 
-            flash(
-                "Erro ao atualizar usuário.",
-                "error"
-            )
-
-            return redirect(
-                url_for(
-                    "editar_usuario",
-                    id=id
-                )
-            )
-
-    turmas = conexao.execute(
-        """
-        SELECT *
-        FROM turmas
-        ORDER BY nome
-        """
-    ).fetchall()
-
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "editar_usuario.html",
@@ -730,29 +1064,18 @@ def editar_usuario(id):
     )
 
 
-# =========================================
+# ============================================================
 # EXCLUIR USUÁRIO
-# =========================================
+# ============================================================
 
 @app.route("/usuarios/excluir/<int:id>")
 def excluir_usuario(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para excluir usuários.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     if id == session["usuario_id"]:
 
@@ -767,29 +1090,48 @@ def excluir_usuario(id):
 
     conexao = conectar()
 
-    usuario = conexao.execute(
-        """
-        SELECT nome
-        FROM usuarios
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
-
-    if usuario is None:
-
-        conexao.close()
-
-        flash(
-            "Usuário não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("usuarios_page")
-        )
-
     try:
+
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
+
+        if usuario is None:
+
+            flash(
+                "Usuário não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("usuarios_page")
+            )
+
+        if usuario["tipo"] == "gestao":
+
+            total_gestao = conexao.execute(
+                """
+                SELECT COUNT(*)
+                FROM usuarios
+                WHERE tipo = 'gestao'
+                """
+            ).fetchone()[0]
+
+            if total_gestao <= 1:
+
+                flash(
+                    "Não é possível excluir o último usuário da gestão.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for("usuarios_page")
+                )
 
         conexao.execute(
             """
@@ -801,12 +1143,8 @@ def excluir_usuario(id):
 
         conexao.commit()
 
-        nome = usuario["nome"]
-
-        conexao.close()
-
         flash(
-            f"Usuário {nome} excluído com sucesso!",
+            f"Usuário {usuario['nome']} excluído com sucesso!",
             "success"
         )
 
@@ -819,134 +1157,157 @@ def excluir_usuario(id):
             erro
         )
 
-        conexao.close()
-
         flash(
             "Erro ao excluir usuário.",
             "error"
         )
+
+    finally:
+
+        conexao.close()
 
     return redirect(
         url_for("usuarios_page")
     )
 
 
-# =========================================
+# ============================================================
 # TURMAS
-# =========================================
+# ============================================================
 
 @app.route("/turmas", methods=["GET", "POST"])
 def turmas_page():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para acessar as turmas.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    if request.method == "POST":
+    try:
 
-        nome = request.form["nome"].strip()
-        ano = request.form["ano"]
+        if request.method == "POST":
 
-        turno = request.form.get(
-            "turno",
-            ""
-        ).strip()
+            nome = limpar_texto(
+                request.form.get("nome"),
+                TAMANHO_MAX_TURMA
+            )
 
-        curso = request.form.get(
-            "curso",
-            ""
-        ).strip()
+            ano = limpar_texto(
+                request.form.get("ano"),
+                10
+            )
 
-        try:
+            turno = limpar_texto(
+                request.form.get("turno"),
+                30
+            )
 
-            turma_existente = conexao.execute(
-                """
-                SELECT id
-                FROM turmas
-                WHERE nome = ?
-                """,
-                (nome,)
-            ).fetchone()
+            curso = limpar_texto(
+                request.form.get("curso"),
+                100
+            )
 
-            if turma_existente:
+            if not nome:
 
                 flash(
-                    "Erro: esta turma já está cadastrada.",
+                    "Informe o nome da turma.",
                     "error"
                 )
 
             else:
 
-                conexao.execute(
+                turma_existente = conexao.execute(
                     """
-                    INSERT INTO turmas
-                    (
-                        nome,
-                        ano,
-                        turno,
-                        curso
-                    )
-                    VALUES (?, ?, ?, ?)
+                    SELECT id
+                    FROM turmas
+                    WHERE nome = ?
                     """,
-                    (
-                        nome,
-                        ano,
-                        turno,
-                        curso
+                    (nome,)
+                ).fetchone()
+
+                if turma_existente:
+
+                    flash(
+                        "Erro: esta turma já está cadastrada.",
+                        "error"
                     )
-                )
 
-                conexao.commit()
+                else:
 
-                flash(
-                    f"Turma {nome} cadastrada com sucesso!",
-                    "success"
-                )
+                    conexao.execute(
+                        """
+                        INSERT INTO turmas
+                        (
+                            nome,
+                            ano,
+                            turno,
+                            curso
+                        )
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            nome,
+                            ano,
+                            turno,
+                            curso
+                        )
+                    )
 
-        except Exception as erro:
+                    conexao.commit()
 
-            conexao.rollback()
+                    flash(
+                        f"Turma {nome} cadastrada com sucesso!",
+                        "success"
+                    )
 
-            print(
-                "Erro ao cadastrar turma:",
-                erro
-            )
+        turmas = conexao.execute(
+            """
+            SELECT
+                t.*,
+                COUNT(u.id) AS total_alunos
+            FROM turmas t
+            LEFT JOIN usuarios u
+                ON u.turma = t.nome
+                AND u.tipo = 'aluno'
+            GROUP BY t.id
+            ORDER BY t.id DESC
+            """
+        ).fetchall()
 
-            flash(
-                "Erro ao cadastrar turma.",
-                "error"
-            )
+    except Exception as erro:
 
-    turmas = conexao.execute(
-        """
-        SELECT
-            t.*,
-            COUNT(u.id) AS total_alunos
-        FROM turmas t
-        LEFT JOIN usuarios u
-            ON u.turma = t.nome
-            AND u.tipo = 'aluno'
-        GROUP BY t.id
-        ORDER BY t.id DESC
-        """
-    ).fetchall()
+        conexao.rollback()
 
-    conexao.close()
+        print(
+            "Erro ao cadastrar turma:",
+            erro
+        )
+
+        flash(
+            "Erro ao processar turma.",
+            "error"
+        )
+
+        turmas = conexao.execute(
+            """
+            SELECT
+                t.*,
+                COUNT(u.id) AS total_alunos
+            FROM turmas t
+            LEFT JOIN usuarios u
+                ON u.turma = t.nome
+                AND u.tipo = 'aluno'
+            GROUP BY t.id
+            ORDER BY t.id DESC
+            """
+        ).fetchall()
+
+    finally:
+
+        conexao.close()
 
     return render_template(
         "turmas.html",
@@ -956,55 +1317,62 @@ def turmas_page():
     )
 
 
-# =========================================
+# ============================================================
 # VER TURMA
-# =========================================
+# ============================================================
 
 @app.route("/turmas/ver/<int:id>")
 def ver_turma(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
+
+        return acesso
 
     conexao = conectar()
 
-    turma = conexao.execute(
-        """
-        SELECT *
-        FROM turmas
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
+    try:
 
-    if turma is None:
+        turma = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
+
+        if turma is None:
+
+            flash(
+                "Turma não encontrada.",
+                "error"
+            )
+
+            return redirect(
+                url_for("turmas_page")
+            )
+
+        alunos = conexao.execute(
+            """
+            SELECT
+                id,
+                nome,
+                email,
+                telefone,
+                turma
+            FROM usuarios
+            WHERE tipo = 'aluno'
+            AND turma = ?
+            ORDER BY nome
+            """,
+            (turma["nome"],)
+        ).fetchall()
+
+    finally:
 
         conexao.close()
-
-        flash(
-            "Turma não encontrada.",
-            "error"
-        )
-
-        return redirect(
-            url_for("turmas_page")
-        )
-
-    alunos = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE tipo = 'aluno'
-        AND turma = ?
-        ORDER BY nome
-        """,
-        (turma["nome"],)
-    ).fetchall()
-
-    conexao.close()
 
     return render_template(
         "ver_turma.html",
@@ -1015,55 +1383,42 @@ def ver_turma(id):
     )
 
 
-# =========================================
+# ============================================================
 # EXCLUIR TURMA
-# =========================================
+# ============================================================
 
 @app.route("/turmas/excluir/<int:id>")
 def excluir_turma(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para excluir turmas.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    turma = conexao.execute(
-        """
-        SELECT nome
-        FROM turmas
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
-
-    if turma is None:
-
-        conexao.close()
-
-        flash(
-            "Turma não encontrada.",
-            "error"
-        )
-
-        return redirect(
-            url_for("turmas_page")
-        )
-
     try:
+
+        turma = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
+
+        if turma is None:
+
+            flash(
+                "Turma não encontrada.",
+                "error"
+            )
+
+            return redirect(
+                url_for("turmas_page")
+            )
 
         alunos_vinculados = conexao.execute(
             """
@@ -1077,10 +1432,29 @@ def excluir_turma(id):
 
         if alunos_vinculados > 0:
 
-            conexao.close()
-
             flash(
                 "Não é possível excluir esta turma porque existem alunos vinculados a ela.",
+                "error"
+            )
+
+            return redirect(
+                url_for("turmas_page")
+            )
+
+        professores_vinculados = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM usuarios
+            WHERE tipo = 'professor'
+            AND turma = ?
+            """,
+            (turma["nome"],)
+        ).fetchone()[0]
+
+        if professores_vinculados > 0:
+
+            flash(
+                "Não é possível excluir esta turma porque existem professores vinculados a ela.",
                 "error"
             )
 
@@ -1098,12 +1472,8 @@ def excluir_turma(id):
 
         conexao.commit()
 
-        nome = turma["nome"]
-
-        conexao.close()
-
         flash(
-            f"Turma {nome} excluída com sucesso!",
+            f"Turma {turma['nome']} excluída com sucesso!",
             "success"
         )
 
@@ -1116,82 +1486,95 @@ def excluir_turma(id):
             erro
         )
 
-        conexao.close()
-
         flash(
             "Erro ao excluir turma.",
             "error"
         )
+
+    finally:
+
+        conexao.close()
 
     return redirect(
         url_for("turmas_page")
     )
 
 
-# =========================================
+# ============================================================
 # EDITAR TURMA
-# =========================================
+# ============================================================
 
-@app.route("/turmas/editar/<int:id>", methods=["GET", "POST"])
+@app.route(
+    "/turmas/editar/<int:id>",
+    methods=["GET", "POST"]
+)
 def editar_turma(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Você não tem permissão para editar turmas.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    turma = conexao.execute(
-        """
-        SELECT *
-        FROM turmas
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
+    try:
 
-    if turma is None:
+        turma = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
 
-        conexao.close()
+        if turma is None:
 
-        flash(
-            "Turma não encontrada.",
-            "error"
-        )
+            flash(
+                "Turma não encontrada.",
+                "error"
+            )
 
-        return redirect(
-            url_for("turmas_page")
-        )
+            return redirect(
+                url_for("turmas_page")
+            )
 
-    if request.method == "POST":
+        if request.method == "POST":
 
-        nome = request.form["nome"].strip()
-        ano = request.form["ano"]
+            nome = limpar_texto(
+                request.form.get("nome"),
+                TAMANHO_MAX_TURMA
+            )
 
-        turno = request.form.get(
-            "turno",
-            ""
-        ).strip()
+            ano = limpar_texto(
+                request.form.get("ano"),
+                10
+            )
 
-        curso = request.form.get(
-            "curso",
-            ""
-        ).strip()
+            turno = limpar_texto(
+                request.form.get("turno"),
+                30
+            )
 
-        try:
+            curso = limpar_texto(
+                request.form.get("curso"),
+                100
+            )
+
+            if not nome:
+
+                flash(
+                    "Informe o nome da turma.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_turma",
+                        id=id
+                    )
+                )
 
             turma_existente = conexao.execute(
                 """
@@ -1200,12 +1583,13 @@ def editar_turma(id):
                 WHERE nome = ?
                 AND id != ?
                 """,
-                (nome, id)
+                (
+                    nome,
+                    id
+                )
             ).fetchone()
 
             if turma_existente:
-
-                conexao.close()
 
                 flash(
                     "Erro: já existe outra turma com esse nome.",
@@ -1254,8 +1638,6 @@ def editar_turma(id):
 
             conexao.commit()
 
-            conexao.close()
-
             flash(
                 f"Turma {nome} atualizada com sucesso!",
                 "success"
@@ -1265,30 +1647,30 @@ def editar_turma(id):
                 url_for("turmas_page")
             )
 
-        except Exception as erro:
+    except Exception as erro:
 
-            conexao.rollback()
+        conexao.rollback()
 
-            print(
-                "Erro ao editar turma:",
-                erro
+        print(
+            "Erro ao editar turma:",
+            erro
+        )
+
+        flash(
+            "Erro ao atualizar turma.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "editar_turma",
+                id=id
             )
+        )
 
-            conexao.close()
+    finally:
 
-            flash(
-                "Erro ao atualizar turma.",
-                "error"
-            )
-
-            return redirect(
-                url_for(
-                    "editar_turma",
-                    id=id
-                )
-            )
-
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "editar_turma.html",
@@ -1298,105 +1680,158 @@ def editar_turma(id):
     )
 
 
-# =========================================
+# ============================================================
 # PERFIL
-# =========================================
+# ============================================================
 
-@app.route("/perfil", methods=["GET", "POST"])
+@app.route(
+    "/perfil",
+    methods=["GET", "POST"]
+)
 def perfil():
 
-    if "usuario_id" not in session:
+    acesso = exigir_login()
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
+
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
+    try:
 
-    if request.method == "POST":
+        usuario_id = session["usuario_id"]
 
-        nome = request.form["nome"].strip()
-        email = request.form["email"].strip()
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (usuario_id,)
+        ).fetchone()
 
-        telefone = request.form.get(
-            "telefone",
-            ""
-        ).strip()
+        if usuario is None:
 
-        try:
+            session.clear()
 
-            email_existente = conexao.execute(
-                """
-                SELECT id
-                FROM usuarios
-                WHERE email = ?
-                AND id != ?
-                """,
-                (email, usuario_id)
-            ).fetchone()
+            flash(
+                "Usuário não encontrado.",
+                "error"
+            )
 
-            if email_existente:
+            return redirect(
+                url_for("inicio")
+            )
+
+        if request.method == "POST":
+
+            nome = limpar_texto(
+                request.form.get("nome"),
+                TAMANHO_MAX_NOME
+            )
+
+            email = limpar_texto(
+                request.form.get("email"),
+                TAMANHO_MAX_EMAIL
+            ).lower()
+
+            telefone = limpar_texto(
+                request.form.get("telefone"),
+                TAMANHO_MAX_TELEFONE
+            )
+
+            if not nome:
 
                 flash(
-                    "Erro: este e-mail já está sendo usado por outro usuário.",
+                    "Informe seu nome.",
+                    "error"
+                )
+
+            elif not email_valido(email):
+
+                flash(
+                    "Informe um e-mail válido.",
                     "error"
                 )
 
             else:
 
-                conexao.execute(
+                email_existente = conexao.execute(
                     """
-                    UPDATE usuarios
-                    SET
-                        nome = ?,
-                        email = ?,
-                        telefone = ?
-                    WHERE id = ?
+                    SELECT id
+                    FROM usuarios
+                    WHERE email = ?
+                    AND id != ?
                     """,
                     (
-                        nome,
                         email,
-                        telefone,
                         usuario_id
                     )
-                )
+                ).fetchone()
 
-                conexao.commit()
+                if email_existente:
 
-                session["usuario_nome"] = nome
-                session["usuario_email"] = email
+                    flash(
+                        "Erro: este e-mail já está sendo usado por outro usuário.",
+                        "error"
+                    )
 
-                flash(
-                    "Perfil atualizado com sucesso!",
-                    "success"
-                )
+                else:
 
-        except Exception as erro:
+                    conexao.execute(
+                        """
+                        UPDATE usuarios
+                        SET
+                            nome = ?,
+                            email = ?,
+                            telefone = ?
+                        WHERE id = ?
+                        """,
+                        (
+                            nome,
+                            email,
+                            telefone,
+                            usuario_id
+                        )
+                    )
 
-            conexao.rollback()
+                    conexao.commit()
 
-            print(
-                "Erro ao atualizar perfil:",
-                erro
-            )
+                    session["usuario_nome"] = nome
+                    session["usuario_email"] = email
 
-            flash(
-                "Erro ao atualizar seu perfil.",
-                "error"
-            )
+                    flash(
+                        "Perfil atualizado com sucesso!",
+                        "success"
+                    )
 
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        """,
-        (usuario_id,)
-    ).fetchone()
+        usuario = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (usuario_id,)
+        ).fetchone()
 
-    conexao.close()
+    except Exception as erro:
+
+        conexao.rollback()
+
+        print(
+            "Erro ao atualizar perfil:",
+            erro
+        )
+
+        flash(
+            "Erro ao atualizar seu perfil.",
+            "error"
+        )
+
+    finally:
+
+        conexao.close()
 
     return render_template(
         "perfil.html",
@@ -1406,104 +1841,110 @@ def perfil():
     )
 
 
-# =========================================
+# ============================================================
 # PAINEL DO PROFESSOR
-# =========================================
+# ============================================================
 
 @app.route("/professor")
 def professor():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("professor")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "professor":
-
-        flash(
-            "Acesso permitido somente para professores.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
+    try:
 
-    professor = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        AND tipo = 'professor'
-        """,
-        (usuario_id,)
-    ).fetchone()
+        usuario_id = session["usuario_id"]
 
-    if professor is None:
-
-        conexao.close()
-
-        session.clear()
-
-        flash(
-            "Usuário professor não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("inicio")
-        )
-
-    turma_nome = professor["turma"]
-
-    turmas = []
-    alunos = []
-
-    if turma_nome:
-
-        turmas = conexao.execute(
-            """
-            SELECT
-                t.*,
-                COUNT(u.id) AS total_alunos
-            FROM turmas t
-            LEFT JOIN usuarios u
-                ON u.turma = t.nome
-                AND u.tipo = 'aluno'
-            WHERE t.nome = ?
-            GROUP BY t.id
-            ORDER BY t.nome
-            """,
-            (turma_nome,)
-        ).fetchall()
-
-        alunos = conexao.execute(
+        professor = conexao.execute(
             """
             SELECT *
             FROM usuarios
-            WHERE tipo = 'aluno'
-            AND turma = ?
-            ORDER BY nome
+            WHERE id = ?
+            AND tipo = 'professor'
             """,
-            (turma_nome,)
+            (usuario_id,)
+        ).fetchone()
+
+        if professor is None:
+
+            session.clear()
+
+            flash(
+                "Usuário professor não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        turma_nome = professor["turma"]
+
+        turmas = []
+        alunos = []
+
+        if turma_nome:
+
+            turmas = conexao.execute(
+                """
+                SELECT
+                    t.*,
+                    COUNT(u.id) AS total_alunos
+                FROM turmas t
+                LEFT JOIN usuarios u
+                    ON u.turma = t.nome
+                    AND u.tipo = 'aluno'
+                WHERE t.nome = ?
+                GROUP BY t.id
+                ORDER BY t.nome
+                """,
+                (turma_nome,)
+            ).fetchall()
+
+            alunos = conexao.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    email,
+                    telefone,
+                    turma
+                FROM usuarios
+                WHERE tipo = 'aluno'
+                AND turma = ?
+                ORDER BY nome
+                """,
+                (turma_nome,)
+            ).fetchall()
+
+        total_alunos = len(alunos)
+
+        # =====================================================
+        # PROFESSOR:
+        # TODOS + SOMENTE PROFESSORES
+        # =====================================================
+
+        avisos = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            WHERE
+                COALESCE(destino, 'todos') IN (
+                    'todos',
+                    'professores'
+                )
+            ORDER BY id DESC
+            """
         ).fetchall()
 
-    total_alunos = len(alunos)
+    finally:
 
-    avisos = conexao.execute(
-        """
-        SELECT *
-        FROM avisos
-        ORDER BY id DESC
-        """
-    ).fetchall()
-
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "professor.html",
@@ -1517,82 +1958,201 @@ def professor():
     )
 
 
-# =========================================
+# ============================================================
+# MINHAS TURMAS — PROFESSOR
+# ============================================================
+
+@app.route("/professor/turmas")
+def professor_turmas():
+
+    acesso = exigir_tipo("professor")
+
+    if acesso:
+
+        return acesso
+
+    conexao = conectar()
+
+    try:
+
+        usuario_id = session["usuario_id"]
+
+        professor = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'professor'
+            """,
+            (usuario_id,)
+        ).fetchone()
+
+        if professor is None:
+
+            session.clear()
+
+            flash(
+                "Professor não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        turma = None
+        alunos = []
+
+        if professor["turma"]:
+
+            turma = conexao.execute(
+                """
+                SELECT *
+                FROM turmas
+                WHERE nome = ?
+                """,
+                (professor["turma"],)
+            ).fetchone()
+
+            alunos = conexao.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    email,
+                    telefone,
+                    turma
+                FROM usuarios
+                WHERE tipo = 'aluno'
+                AND turma = ?
+                ORDER BY nome
+                """,
+                (professor["turma"],)
+            ).fetchall()
+
+    finally:
+
+        conexao.close()
+
+    return render_template(
+        "professor_turmas.html",
+        professor=professor,
+        turma=turma,
+        alunos=alunos,
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
+
+
+# ============================================================
+# AVISOS — PROFESSOR
+# ============================================================
+
+@app.route("/professor/avisos")
+def professor_avisos():
+
+    acesso = exigir_tipo("professor")
+
+    if acesso:
+
+        return acesso
+
+    conexao = conectar()
+
+    try:
+
+        avisos = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            WHERE
+                COALESCE(destino, 'todos') IN (
+                    'todos',
+                    'professores'
+                )
+            ORDER BY id DESC
+            """
+        ).fetchall()
+
+    finally:
+
+        conexao.close()
+
+    return render_template(
+        "professor_avisos.html",
+        avisos=avisos,
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
+
+
+# ============================================================
 # MEUS ALUNOS — PROFESSOR
-# =========================================
+# ============================================================
 
 @app.route("/professor/alunos")
 def meus_alunos():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("professor")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "professor":
-
-        flash(
-            "Acesso permitido somente para professores.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
+    try:
 
-    professor = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        AND tipo = 'professor'
-        """,
-        (usuario_id,)
-    ).fetchone()
+        usuario_id = session["usuario_id"]
 
-    if professor is None:
+        professor = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'professor'
+            """,
+            (usuario_id,)
+        ).fetchone()
+
+        if professor is None:
+
+            session.clear()
+
+            flash(
+                "Professor não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        turma_nome = professor["turma"]
+
+        alunos = []
+
+        if turma_nome:
+
+            alunos = conexao.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    email,
+                    telefone,
+                    turma
+                FROM usuarios
+                WHERE tipo = 'aluno'
+                AND turma = ?
+                ORDER BY nome
+                """,
+                (turma_nome,)
+            ).fetchall()
+
+    finally:
 
         conexao.close()
-
-        session.clear()
-
-        flash(
-            "Professor não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("inicio")
-        )
-
-    turma_nome = professor["turma"]
-
-    alunos = []
-
-    if turma_nome:
-
-        alunos = conexao.execute(
-            """
-            SELECT
-                id,
-                nome,
-                email,
-                telefone,
-                turma
-            FROM usuarios
-            WHERE tipo = 'aluno'
-            AND turma = ?
-            ORDER BY nome
-            """,
-            (turma_nome,)
-        ).fetchall()
-
-    conexao.close()
 
     return render_template(
         "meus_alunos.html",
@@ -1604,95 +2164,99 @@ def meus_alunos():
     )
 
 
-# =========================================
+# ============================================================
 # PAINEL DO ALUNO
-# =========================================
+# ============================================================
 
 @app.route("/aluno")
 def aluno():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("aluno")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "aluno":
-
-        flash(
-            "Acesso permitido somente para alunos.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
+    try:
 
-    aluno = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        AND tipo = 'aluno'
-        """,
-        (usuario_id,)
-    ).fetchone()
+        usuario_id = session["usuario_id"]
 
-    if aluno is None:
-
-        conexao.close()
-
-        session.clear()
-
-        flash(
-            "Aluno não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("inicio")
-        )
-
-    turma = None
-
-    if aluno["turma"]:
-
-        turma = conexao.execute(
+        aluno = conexao.execute(
             """
             SELECT *
-            FROM turmas
-            WHERE nome = ?
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'aluno'
             """,
-            (aluno["turma"],)
+            (usuario_id,)
         ).fetchone()
 
-    total_alunos = 0
+        if aluno is None:
 
-    if aluno["turma"]:
+            session.clear()
 
-        total_alunos = conexao.execute(
+            flash(
+                "Aluno não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        turma = None
+        total_alunos = 0
+
+        if aluno["turma"]:
+
+            turma = conexao.execute(
+                """
+                SELECT *
+                FROM turmas
+                WHERE nome = ?
+                """,
+                (aluno["turma"],)
+            ).fetchone()
+
+            total_alunos = conexao.execute(
+                """
+                SELECT COUNT(*)
+                FROM usuarios
+                WHERE tipo = 'aluno'
+                AND turma = ?
+                """,
+                (aluno["turma"],)
+            ).fetchone()[0]
+
+        # =====================================================
+        # ALUNO:
+        # TODOS + ALUNOS + SUA TURMA
+        # =====================================================
+
+        avisos = conexao.execute(
             """
-            SELECT COUNT(*)
-            FROM usuarios
-            WHERE tipo = 'aluno'
-            AND turma = ?
+            SELECT *
+            FROM avisos
+            WHERE
+                COALESCE(destino, 'todos') IN (
+                    'todos',
+                    'alunos'
+                )
+                OR
+                (
+                    destino = 'turma'
+                    AND turma = ?
+                )
+            ORDER BY id DESC
             """,
             (aluno["turma"],)
-        ).fetchone()[0]
+        ).fetchall()
 
-    avisos = conexao.execute(
-        """
-        SELECT *
-        FROM avisos
-        ORDER BY id DESC
-        """
-    ).fetchall()
+    finally:
 
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "aluno.html",
@@ -1705,51 +2269,329 @@ def aluno():
     )
 
 
-# =========================================
-# AVISOS — GESTÃO
-# =========================================
+# ============================================================
+# MINHA TURMA — ALUNO
+# ============================================================
 
-@app.route("/avisos", methods=["GET", "POST"])
-def avisos_page():
+@app.route("/aluno/turma")
+def aluno_turma():
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("aluno")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Somente a gestão pode administrar os avisos.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    if request.method == "POST":
+    try:
 
-        titulo = request.form["titulo"].strip()
-        mensagem = request.form["mensagem"].strip()
+        usuario_id = session["usuario_id"]
 
-        data = datetime.now().strftime(
-            "%d/%m/%Y %H:%M"
-        )
+        aluno = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'aluno'
+            """,
+            (usuario_id,)
+        ).fetchone()
 
-        if not titulo or not mensagem:
+        if aluno is None:
+
+            session.clear()
 
             flash(
-                "Preencha o título e a mensagem do aviso.",
+                "Aluno não encontrado.",
                 "error"
             )
 
-        else:
+            return redirect(
+                url_for("inicio")
+            )
 
-            try:
+        turma = None
+        colegas = []
+
+        if aluno["turma"]:
+
+            turma = conexao.execute(
+                """
+                SELECT *
+                FROM turmas
+                WHERE nome = ?
+                """,
+                (aluno["turma"],)
+            ).fetchone()
+
+            colegas = conexao.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    email,
+                    turma
+                FROM usuarios
+                WHERE tipo = 'aluno'
+                AND turma = ?
+                AND id != ?
+                ORDER BY nome
+                """,
+                (
+                    aluno["turma"],
+                    usuario_id
+                )
+            ).fetchall()
+
+    finally:
+
+        conexao.close()
+
+    return render_template(
+        "aluno_turma.html",
+        aluno=aluno,
+        turma=turma,
+        colegas=colegas,
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
+
+
+# ============================================================
+# PROFESSORES — ALUNO
+# ============================================================
+
+@app.route("/aluno/professores")
+def aluno_professores():
+
+    acesso = exigir_tipo("aluno")
+
+    if acesso:
+
+        return acesso
+
+    conexao = conectar()
+
+    try:
+
+        usuario_id = session["usuario_id"]
+
+        aluno = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'aluno'
+            """,
+            (usuario_id,)
+        ).fetchone()
+
+        if aluno is None:
+
+            session.clear()
+
+            flash(
+                "Aluno não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        professores = []
+
+        if aluno["turma"]:
+
+            professores = conexao.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    email,
+                    telefone,
+                    turma
+                FROM usuarios
+                WHERE tipo = 'professor'
+                AND turma = ?
+                ORDER BY nome
+                """,
+                (aluno["turma"],)
+            ).fetchall()
+
+    finally:
+
+        conexao.close()
+
+    return render_template(
+        "aluno_professores.html",
+        aluno=aluno,
+        professores=professores,
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
+
+
+# ============================================================
+# AVISOS — ALUNO
+# ============================================================
+
+@app.route("/aluno/avisos")
+def aluno_avisos():
+
+    acesso = exigir_tipo("aluno")
+
+    if acesso:
+
+        return acesso
+
+    conexao = conectar()
+
+    try:
+
+        usuario_id = session["usuario_id"]
+
+        aluno = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            AND tipo = 'aluno'
+            """,
+            (usuario_id,)
+        ).fetchone()
+
+        if aluno is None:
+
+            session.clear()
+
+            flash(
+                "Aluno não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("inicio")
+            )
+
+        avisos = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            WHERE
+                COALESCE(destino, 'todos') IN (
+                    'todos',
+                    'alunos'
+                )
+                OR
+                (
+                    destino = 'turma'
+                    AND turma = ?
+                )
+            ORDER BY id DESC
+            """,
+            (aluno["turma"],)
+        ).fetchall()
+
+    finally:
+
+        conexao.close()
+
+    return render_template(
+        "aluno_avisos.html",
+        avisos=avisos,
+        usuario_nome=session["usuario_nome"],
+        usuario_tipo=session["usuario_tipo"]
+    )
+
+
+# ============================================================
+# AVISOS — GESTÃO
+# ============================================================
+
+@app.route(
+    "/avisos",
+    methods=["GET", "POST"]
+)
+def avisos_page():
+
+    acesso = exigir_tipo("gestao")
+
+    if acesso:
+
+        return acesso
+
+    conexao = conectar()
+
+    try:
+
+        if request.method == "POST":
+
+            titulo = limpar_texto(
+                request.form.get("titulo"),
+                TAMANHO_MAX_TITULO
+            )
+
+            mensagem = limpar_texto(
+                request.form.get("mensagem"),
+                TAMANHO_MAX_MENSAGEM
+            )
+
+            destino = limpar_texto(
+                request.form.get("destino"),
+                30
+            )
+
+            turma = limpar_texto(
+                request.form.get("turma"),
+                TAMANHO_MAX_TURMA
+            )
+
+            # =================================================
+            # VALIDAÇÕES
+            # =================================================
+
+            if not titulo or not mensagem:
+
+                flash(
+                    "Preencha o título e a mensagem do aviso.",
+                    "error"
+                )
+
+            elif destino not in DESTINOS_AVISO_VALIDOS:
+
+                flash(
+                    "Destino do aviso inválido.",
+                    "error"
+                )
+
+            elif destino == "turma" and not turma:
+
+                flash(
+                    "Selecione uma turma para este aviso.",
+                    "error"
+                )
+
+            elif destino == "turma" and not turma_existe(
+                conexao,
+                turma
+            ):
+
+                flash(
+                    "A turma selecionada não existe.",
+                    "error"
+                )
+
+            else:
+
+                data = datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"
+                )
+
+                if destino != "turma":
+
+                    turma = ""
 
                 conexao.execute(
                     """
@@ -1757,14 +2599,18 @@ def avisos_page():
                     (
                         titulo,
                         mensagem,
-                        data
+                        data,
+                        destino,
+                        turma
                     )
-                    VALUES (?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?)
                     """,
                     (
                         titulo,
                         mensagem,
-                        data
+                        data,
+                        destino,
+                        turma
                     )
                 )
 
@@ -1775,127 +2621,214 @@ def avisos_page():
                     "success"
                 )
 
-            except Exception as erro:
+        avisos = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            ORDER BY id DESC
+            """
+        ).fetchall()
 
-                conexao.rollback()
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
 
-                print(
-                    "Erro ao cadastrar aviso:",
-                    erro
-                )
+    except Exception as erro:
 
-                flash(
-                    "Erro ao publicar o aviso.",
-                    "error"
-                )
+        conexao.rollback()
 
-    avisos = conexao.execute(
-        """
-        SELECT *
-        FROM avisos
-        ORDER BY id DESC
-        """
-    ).fetchall()
+        print(
+            "Erro ao cadastrar aviso:",
+            erro
+        )
 
-    conexao.close()
+        flash(
+            "Erro ao publicar o aviso.",
+            "error"
+        )
+
+        avisos = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            ORDER BY id DESC
+            """
+        ).fetchall()
+
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
+
+    finally:
+
+        conexao.close()
 
     return render_template(
         "avisos.html",
         avisos=avisos,
+        turmas=turmas,
         usuario_nome=session["usuario_nome"],
         usuario_tipo=session["usuario_tipo"]
     )
 
 
-# =========================================
+# ============================================================
 # EDITAR AVISO
-# =========================================
+# ============================================================
 
-@app.route("/avisos/editar/<int:id>", methods=["GET", "POST"])
+@app.route(
+    "/avisos/editar/<int:id>",
+    methods=["GET", "POST"]
+)
 def editar_aviso(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Somente a gestão pode editar avisos.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    aviso = conexao.execute(
-        """
-        SELECT *
-        FROM avisos
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
+    try:
 
-    if aviso is None:
+        aviso = conexao.execute(
+            """
+            SELECT *
+            FROM avisos
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
 
-        conexao.close()
-
-        flash(
-            "Aviso não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("avisos_page")
-        )
-
-    if request.method == "POST":
-
-        titulo = request.form["titulo"].strip()
-        mensagem = request.form["mensagem"].strip()
-
-        if not titulo or not mensagem:
-
-            conexao.close()
+        if aviso is None:
 
             flash(
-                "Preencha o título e a mensagem do aviso.",
+                "Aviso não encontrado.",
                 "error"
             )
 
             return redirect(
-                url_for(
-                    "editar_aviso",
-                    id=id
-                )
+                url_for("avisos_page")
             )
 
-        try:
+        if request.method == "POST":
+
+            titulo = limpar_texto(
+                request.form.get("titulo"),
+                TAMANHO_MAX_TITULO
+            )
+
+            mensagem = limpar_texto(
+                request.form.get("mensagem"),
+                TAMANHO_MAX_MENSAGEM
+            )
+
+            destino = limpar_texto(
+                request.form.get("destino"),
+                30
+            )
+
+            turma = limpar_texto(
+                request.form.get("turma"),
+                TAMANHO_MAX_TURMA
+            )
+
+            # =================================================
+            # VALIDAÇÕES
+            # =================================================
+
+            if not titulo or not mensagem:
+
+                flash(
+                    "Preencha o título e a mensagem do aviso.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_aviso",
+                        id=id
+                    )
+                )
+
+            if destino not in DESTINOS_AVISO_VALIDOS:
+
+                flash(
+                    "Destino do aviso inválido.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_aviso",
+                        id=id
+                    )
+                )
+
+            if destino == "turma" and not turma:
+
+                flash(
+                    "Selecione uma turma para este aviso.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_aviso",
+                        id=id
+                    )
+                )
+
+            if destino == "turma" and not turma_existe(
+                conexao,
+                turma
+            ):
+
+                flash(
+                    "A turma selecionada não existe.",
+                    "error"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_aviso",
+                        id=id
+                    )
+                )
+
+            if destino != "turma":
+
+                turma = ""
 
             conexao.execute(
                 """
                 UPDATE avisos
                 SET
                     titulo = ?,
-                    mensagem = ?
+                    mensagem = ?,
+                    destino = ?,
+                    turma = ?
                 WHERE id = ?
                 """,
                 (
                     titulo,
                     mensagem,
+                    destino,
+                    turma,
                     id
                 )
             )
 
             conexao.commit()
-
-            conexao.close()
 
             flash(
                 "Aviso atualizado com sucesso!",
@@ -1906,88 +2839,84 @@ def editar_aviso(id):
                 url_for("avisos_page")
             )
 
-        except Exception as erro:
+        turmas = conexao.execute(
+            """
+            SELECT *
+            FROM turmas
+            ORDER BY nome
+            """
+        ).fetchall()
 
-            conexao.rollback()
+    except Exception as erro:
 
-            print(
-                "Erro ao editar aviso:",
-                erro
+        conexao.rollback()
+
+        print(
+            "Erro ao editar aviso:",
+            erro
+        )
+
+        flash(
+            "Erro ao atualizar o aviso.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "editar_aviso",
+                id=id
             )
+        )
 
-            conexao.close()
+    finally:
 
-            flash(
-                "Erro ao atualizar o aviso.",
-                "error"
-            )
-
-            return redirect(
-                url_for(
-                    "editar_aviso",
-                    id=id
-                )
-            )
-
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "editar_aviso.html",
         aviso=aviso,
+        turmas=turmas,
         usuario_nome=session["usuario_nome"],
         usuario_tipo=session["usuario_tipo"]
     )
 
 
-# =========================================
+# ============================================================
 # EXCLUIR AVISO
-# =========================================
+# ============================================================
 
 @app.route("/avisos/excluir/<int:id>")
 def excluir_aviso(id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_tipo("gestao")
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
 
-    if session.get("usuario_tipo") != "gestao":
-
-        flash(
-            "Somente a gestão pode excluir avisos.",
-            "error"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return acesso
 
     conexao = conectar()
 
-    aviso = conexao.execute(
-        """
-        SELECT titulo
-        FROM avisos
-        WHERE id = ?
-        """,
-        (id,)
-    ).fetchone()
-
-    if aviso is None:
-
-        conexao.close()
-
-        flash(
-            "Aviso não encontrado.",
-            "error"
-        )
-
-        return redirect(
-            url_for("avisos_page")
-        )
-
     try:
+
+        aviso = conexao.execute(
+            """
+            SELECT titulo
+            FROM avisos
+            WHERE id = ?
+            """,
+            (id,)
+        ).fetchone()
+
+        if aviso is None:
+
+            flash(
+                "Aviso não encontrado.",
+                "error"
+            )
+
+            return redirect(
+                url_for("avisos_page")
+            )
 
         conexao.execute(
             """
@@ -1999,12 +2928,8 @@ def excluir_aviso(id):
 
         conexao.commit()
 
-        titulo = aviso["titulo"]
-
-        conexao.close()
-
         flash(
-            f"Aviso '{titulo}' excluído com sucesso!",
+            f"Aviso '{aviso['titulo']}' excluído com sucesso!",
             "success"
         )
 
@@ -2017,122 +2942,185 @@ def excluir_aviso(id):
             erro
         )
 
-        conexao.close()
-
         flash(
             "Erro ao excluir o aviso.",
             "error"
         )
+
+    finally:
+
+        conexao.close()
 
     return redirect(
         url_for("avisos_page")
     )
 
 
-# =========================================
+# ============================================================
 # COMUNICAÇÃO ESCOLAR
-# =========================================
+# ============================================================
 
 @app.route("/comunicacao")
 def comunicacao():
 
-    if "usuario_id" not in session:
+    acesso = exigir_login()
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
+
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
-    usuario_tipo = session["usuario_tipo"]
+    try:
 
-    contatos = []
+        usuario_id = session["usuario_id"]
+        usuario_tipo = session["usuario_tipo"]
 
-    # =========================================
-    # ALUNO
-    # =========================================
+        contatos = []
 
-    if usuario_tipo == "aluno":
+        # =====================================================
+        # ALUNO
+        # =====================================================
 
-        aluno = conexao.execute(
-            """
-            SELECT turma
-            FROM usuarios
-            WHERE id = ?
-            """,
-            (usuario_id,)
-        ).fetchone()
+        if usuario_tipo == "aluno":
 
-        if aluno and aluno["turma"]:
-
-            contatos = conexao.execute(
+            aluno = conexao.execute(
                 """
-                SELECT
-                    id,
-                    nome,
-                    email,
-                    tipo,
-                    turma
+                SELECT turma
                 FROM usuarios
-                WHERE id != ?
-                AND
-                (
-                    tipo = 'gestao'
-                    OR
-                    (
-                        tipo = 'professor'
-                        AND turma = ?
-                    )
-                )
-                ORDER BY
-                    CASE
-                        WHEN tipo = 'gestao' THEN 1
-                        WHEN tipo = 'professor' THEN 2
-                        ELSE 3
-                    END,
-                    nome
-                """,
-                (
-                    usuario_id,
-                    aluno["turma"]
-                )
-            ).fetchall()
-
-        else:
-
-            contatos = conexao.execute(
-                """
-                SELECT
-                    id,
-                    nome,
-                    email,
-                    tipo,
-                    turma
-                FROM usuarios
-                WHERE id != ?
-                AND tipo = 'gestao'
-                ORDER BY nome
+                WHERE id = ?
+                AND tipo = 'aluno'
                 """,
                 (usuario_id,)
-            ).fetchall()
+            ).fetchone()
 
-    # =========================================
-    # PROFESSOR
-    # =========================================
+            if aluno and aluno["turma"]:
 
-    elif usuario_tipo == "professor":
+                contatos = conexao.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        email,
+                        tipo,
+                        turma
+                    FROM usuarios
+                    WHERE id != ?
+                    AND
+                    (
+                        tipo = 'gestao'
+                        OR
+                        (
+                            tipo = 'professor'
+                            AND turma = ?
+                        )
+                    )
+                    ORDER BY
+                        CASE
+                            WHEN tipo = 'gestao' THEN 1
+                            WHEN tipo = 'professor' THEN 2
+                            ELSE 3
+                        END,
+                        nome
+                    """,
+                    (
+                        usuario_id,
+                        aluno["turma"]
+                    )
+                ).fetchall()
 
-        professor = conexao.execute(
-            """
-            SELECT turma
-            FROM usuarios
-            WHERE id = ?
-            """,
-            (usuario_id,)
-        ).fetchone()
+            else:
 
-        if professor and professor["turma"]:
+                contatos = conexao.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        email,
+                        tipo,
+                        turma
+                    FROM usuarios
+                    WHERE id != ?
+                    AND tipo = 'gestao'
+                    ORDER BY nome
+                    """,
+                    (usuario_id,)
+                ).fetchall()
+
+        # =====================================================
+        # PROFESSOR
+        # =====================================================
+
+        elif usuario_tipo == "professor":
+
+            professor = conexao.execute(
+                """
+                SELECT turma
+                FROM usuarios
+                WHERE id = ?
+                AND tipo = 'professor'
+                """,
+                (usuario_id,)
+            ).fetchone()
+
+            if professor and professor["turma"]:
+
+                contatos = conexao.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        email,
+                        tipo,
+                        turma
+                    FROM usuarios
+                    WHERE id != ?
+                    AND
+                    (
+                        tipo = 'gestao'
+                        OR
+                        (
+                            tipo = 'aluno'
+                            AND turma = ?
+                        )
+                    )
+                    ORDER BY
+                        CASE
+                            WHEN tipo = 'gestao' THEN 1
+                            WHEN tipo = 'aluno' THEN 2
+                            ELSE 3
+                        END,
+                        nome
+                    """,
+                    (
+                        usuario_id,
+                        professor["turma"]
+                    )
+                ).fetchall()
+
+            else:
+
+                contatos = conexao.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        email,
+                        tipo,
+                        turma
+                    FROM usuarios
+                    WHERE id != ?
+                    AND tipo = 'gestao'
+                    ORDER BY nome
+                    """,
+                    (usuario_id,)
+                ).fetchall()
+
+        # =====================================================
+        # GESTÃO
+        # =====================================================
+
+        elif usuario_tipo == "gestao":
 
             contatos = conexao.execute(
                 """
@@ -2144,106 +3132,47 @@ def comunicacao():
                     turma
                 FROM usuarios
                 WHERE id != ?
-                AND
-                (
-                    tipo = 'gestao'
-                    OR
-                    (
-                        tipo = 'aluno'
-                        AND turma = ?
-                    )
-                )
+                AND tipo IN ('professor', 'aluno')
                 ORDER BY
                     CASE
-                        WHEN tipo = 'gestao' THEN 1
+                        WHEN tipo = 'professor' THEN 1
                         WHEN tipo = 'aluno' THEN 2
                         ELSE 3
                     END,
                     nome
                 """,
-                (
-                    usuario_id,
-                    professor["turma"]
-                )
-            ).fetchall()
-
-        else:
-
-            contatos = conexao.execute(
-                """
-                SELECT
-                    id,
-                    nome,
-                    email,
-                    tipo,
-                    turma
-                FROM usuarios
-                WHERE id != ?
-                AND tipo = 'gestao'
-                ORDER BY nome
-                """,
                 (usuario_id,)
             ).fetchall()
 
-    # =========================================
-    # GESTÃO
-    # =========================================
+        contatos_com_mensagens = []
 
-    elif usuario_tipo == "gestao":
+        for contato in contatos:
 
-        contatos = conexao.execute(
-            """
-            SELECT
-                id,
-                nome,
-                email,
-                tipo,
-                turma
-            FROM usuarios
-            WHERE id != ?
-            AND tipo IN ('professor', 'aluno')
-            ORDER BY
-                CASE
-                    WHEN tipo = 'professor' THEN 1
-                    WHEN tipo = 'aluno' THEN 2
-                    ELSE 3
-                END,
-                nome
-            """,
-            (usuario_id,)
-        ).fetchall()
+            nao_lidas = conexao.execute(
+                """
+                SELECT COUNT(*)
+                FROM mensagens
+                WHERE remetente_id = ?
+                AND destinatario_id = ?
+                AND lida = 0
+                """,
+                (
+                    contato["id"],
+                    usuario_id
+                )
+            ).fetchone()[0]
 
-    # =========================================
-    # MENSAGENS NÃO LIDAS
-    # =========================================
+            contato_dict = dict(contato)
 
-    contatos_com_mensagens = []
+            contato_dict["nao_lidas"] = nao_lidas
 
-    for contato in contatos:
-
-        nao_lidas = conexao.execute(
-            """
-            SELECT COUNT(*)
-            FROM mensagens
-            WHERE remetente_id = ?
-            AND destinatario_id = ?
-            AND lida = 0
-            """,
-            (
-                contato["id"],
-                usuario_id
+            contatos_com_mensagens.append(
+                contato_dict
             )
-        ).fetchone()[0]
 
-        contato_dict = dict(contato)
+    finally:
 
-        contato_dict["nao_lidas"] = nao_lidas
-
-        contatos_com_mensagens.append(
-            contato_dict
-        )
-
-    conexao.close()
+        conexao.close()
 
     return render_template(
         "comunicacao.html",
@@ -2253,221 +3182,246 @@ def comunicacao():
     )
 
 
-# =========================================
+# ============================================================
 # CONVERSA
-# =========================================
+# ============================================================
 
-@app.route("/comunicacao/<int:contato_id>", methods=["GET", "POST"])
+@app.route(
+    "/comunicacao/<int:contato_id>",
+    methods=["GET", "POST"]
+)
 def conversa(contato_id):
 
-    if "usuario_id" not in session:
+    acesso = exigir_login()
 
-        return redirect(
-            url_for("inicio")
-        )
+    if acesso:
+
+        return acesso
 
     conexao = conectar()
 
-    usuario_id = session["usuario_id"]
-    usuario_tipo = session["usuario_tipo"]
+    try:
 
-    # =========================================
-    # VERIFICAR CONTATO
-    # =========================================
+        usuario_id = session["usuario_id"]
+        usuario_tipo = session["usuario_tipo"]
 
-    contato = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = ?
-        """,
-        (contato_id,)
-    ).fetchone()
+        if contato_id == usuario_id:
 
-    if contato is None:
+            flash(
+                "Você não pode conversar consigo mesmo.",
+                "error"
+            )
 
-        conexao.close()
+            return redirect(
+                url_for("comunicacao")
+            )
 
-        flash(
-            "Usuário não encontrado.",
-            "error"
-        )
+        contato = conexao.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (contato_id,)
+        ).fetchone()
 
-        return redirect(
-            url_for("comunicacao")
-        )
+        if contato is None:
 
-    # =========================================
-    # VERIFICAR PERMISSÃO
-    # =========================================
+            flash(
+                "Usuário não encontrado.",
+                "error"
+            )
 
-    permitido = False
+            return redirect(
+                url_for("comunicacao")
+            )
 
-    # Gestão
+        permitido = False
 
-    if usuario_tipo == "gestao":
+        # =====================================================
+        # GESTÃO
+        # =====================================================
 
-        if contato["tipo"] in ("professor", "aluno"):
+        if usuario_tipo == "gestao":
 
-            permitido = True
-
-    # Professor
-
-    elif usuario_tipo == "professor":
-
-        if contato["tipo"] == "gestao":
-
-            permitido = True
-
-        elif contato["tipo"] == "aluno":
-
-            professor = conexao.execute(
-                """
-                SELECT turma
-                FROM usuarios
-                WHERE id = ?
-                """,
-                (usuario_id,)
-            ).fetchone()
-
-            if professor and professor["turma"] == contato["turma"]:
+            if contato["tipo"] in (
+                "professor",
+                "aluno"
+            ):
 
                 permitido = True
 
-    # Aluno
+        # =====================================================
+        # PROFESSOR
+        # =====================================================
 
-    elif usuario_tipo == "aluno":
+        elif usuario_tipo == "professor":
 
-        if contato["tipo"] == "gestao":
-
-            permitido = True
-
-        elif contato["tipo"] == "professor":
-
-            aluno = conexao.execute(
-                """
-                SELECT turma
-                FROM usuarios
-                WHERE id = ?
-                """,
-                (usuario_id,)
-            ).fetchone()
-
-            if aluno and aluno["turma"] == contato["turma"]:
+            if contato["tipo"] == "gestao":
 
                 permitido = True
 
-    if not permitido:
+            elif contato["tipo"] == "aluno":
+
+                professor = conexao.execute(
+                    """
+                    SELECT turma
+                    FROM usuarios
+                    WHERE id = ?
+                    AND tipo = 'professor'
+                    """,
+                    (usuario_id,)
+                ).fetchone()
+
+                if (
+                    professor
+                    and professor["turma"]
+                    and professor["turma"] == contato["turma"]
+                ):
+
+                    permitido = True
+
+        # =====================================================
+        # ALUNO
+        # =====================================================
+
+        elif usuario_tipo == "aluno":
+
+            if contato["tipo"] == "gestao":
+
+                permitido = True
+
+            elif contato["tipo"] == "professor":
+
+                aluno = conexao.execute(
+                    """
+                    SELECT turma
+                    FROM usuarios
+                    WHERE id = ?
+                    AND tipo = 'aluno'
+                    """,
+                    (usuario_id,)
+                ).fetchone()
+
+                if (
+                    aluno
+                    and aluno["turma"]
+                    and aluno["turma"] == contato["turma"]
+                ):
+
+                    permitido = True
+
+        if not permitido:
+
+            flash(
+                "Você não tem permissão para conversar com este usuário.",
+                "error"
+            )
+
+            return redirect(
+                url_for("comunicacao")
+            )
+
+        # =====================================================
+        # ENVIAR MENSAGEM
+        # =====================================================
+
+        if request.method == "POST":
+
+            mensagem = limpar_texto(
+                request.form.get("mensagem"),
+                TAMANHO_MAX_MENSAGEM
+            )
+
+            if mensagem:
+
+                data = datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"
+                )
+
+                conexao.execute(
+                    """
+                    INSERT INTO mensagens
+                    (
+                        remetente_id,
+                        destinatario_id,
+                        mensagem,
+                        data,
+                        lida
+                    )
+                    VALUES (?, ?, ?, ?, 0)
+                    """,
+                    (
+                        usuario_id,
+                        contato_id,
+                        mensagem,
+                        data
+                    )
+                )
+
+                conexao.commit()
+
+            return redirect(
+                url_for(
+                    "conversa",
+                    contato_id=contato_id
+                )
+            )
+
+        # =====================================================
+        # BUSCAR MENSAGENS
+        # =====================================================
+
+        mensagens = conexao.execute(
+            """
+            SELECT
+                m.*,
+                u.nome AS remetente_nome
+            FROM mensagens m
+            JOIN usuarios u
+                ON u.id = m.remetente_id
+            WHERE
+                (
+                    m.remetente_id = ?
+                    AND m.destinatario_id = ?
+                )
+                OR
+                (
+                    m.remetente_id = ?
+                    AND m.destinatario_id = ?
+                )
+            ORDER BY m.id ASC
+            """,
+            (
+                usuario_id,
+                contato_id,
+                contato_id,
+                usuario_id
+            )
+        ).fetchall()
+
+        # =====================================================
+        # MARCAR COMO LIDAS
+        # =====================================================
+
+        conexao.execute(
+            """
+            UPDATE mensagens
+            SET lida = 1
+            WHERE remetente_id = ?
+            AND destinatario_id = ?
+            """,
+            (
+                contato_id,
+                usuario_id
+            )
+        )
+
+        conexao.commit()
+
+    finally:
 
         conexao.close()
-
-        flash(
-            "Você não tem permissão para conversar com este usuário.",
-            "error"
-        )
-
-        return redirect(
-            url_for("comunicacao")
-        )
-
-    # =========================================
-    # ENVIAR MENSAGEM
-    # =========================================
-
-    if request.method == "POST":
-
-        mensagem = request.form.get(
-            "mensagem",
-            ""
-        ).strip()
-
-        if mensagem:
-
-            data = datetime.now().strftime(
-                "%d/%m/%Y %H:%M"
-            )
-
-            conexao.execute(
-                """
-                INSERT INTO mensagens
-                (
-                    remetente_id,
-                    destinatario_id,
-                    mensagem,
-                    data,
-                    lida
-                )
-                VALUES (?, ?, ?, ?, 0)
-                """,
-                (
-                    usuario_id,
-                    contato_id,
-                    mensagem,
-                    data
-                )
-            )
-
-            conexao.commit()
-
-        return redirect(
-            url_for(
-                "conversa",
-                contato_id=contato_id
-            )
-        )
-
-    # =========================================
-    # BUSCAR MENSAGENS
-    # =========================================
-
-    mensagens = conexao.execute(
-        """
-        SELECT
-            m.*,
-            u.nome AS remetente_nome
-        FROM mensagens m
-        JOIN usuarios u
-            ON u.id = m.remetente_id
-        WHERE
-            (
-                m.remetente_id = ?
-                AND m.destinatario_id = ?
-            )
-            OR
-            (
-                m.remetente_id = ?
-                AND m.destinatario_id = ?
-            )
-        ORDER BY m.id ASC
-        """,
-        (
-            usuario_id,
-            contato_id,
-            contato_id,
-            usuario_id
-        )
-    ).fetchall()
-
-    # =========================================
-    # MARCAR COMO LIDAS
-    # =========================================
-
-    conexao.execute(
-        """
-        UPDATE mensagens
-        SET lida = 1
-        WHERE remetente_id = ?
-        AND destinatario_id = ?
-        """,
-        (
-            contato_id,
-            usuario_id
-        )
-    )
-
-    conexao.commit()
-
-    conexao.close()
 
     return render_template(
         "conversa.html",
@@ -2479,9 +3433,9 @@ def conversa(contato_id):
     )
 
 
-# =========================================
+# ============================================================
 # LOGOUT
-# =========================================
+# ============================================================
 
 @app.route("/logout")
 def logout():
@@ -2493,13 +3447,54 @@ def logout():
     )
 
 
-# =========================================
+# ============================================================
+# ERROS
+# ============================================================
+
+@app.errorhandler(404)
+def pagina_nao_encontrada(erro):
+
+    return (
+        """
+        <h1>404 - Página não encontrada</h1>
+        <p>A página solicitada não existe.</p>
+        """,
+        404
+    )
+
+
+@app.errorhandler(403)
+def acesso_negado(erro):
+
+    return (
+        """
+        <h1>403 - Acesso negado</h1>
+        <p>Você não possui permissão para acessar este recurso.</p>
+        """,
+        403
+    )
+
+
+@app.errorhandler(500)
+def erro_interno(erro):
+
+    return (
+        """
+        <h1>500 - Erro interno</h1>
+        <p>O sistema encontrou um erro inesperado.</p>
+        """,
+        500
+    )
+
+
+# ============================================================
 # EXECUTAR SISTEMA
-# =========================================
+# ============================================================
+
 if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
         port=5000,
-        debug=True
+        debug=False
     )

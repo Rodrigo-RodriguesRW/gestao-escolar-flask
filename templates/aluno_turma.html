@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Meus Alunos | Gestão Escolar</title>
+    <title>Minha Turma | Gestão Escolar</title>
 
     <link
         rel="stylesheet"
@@ -29,13 +29,11 @@
 {% include "menu.html" %}
 
 
-
 <!-- =========================================
      CONTEÚDO
 ========================================= -->
 
 <main class="dashboard">
-
 
 
     <!-- =========================================
@@ -44,81 +42,38 @@
 
     <div class="dashboard-title">
 
-
         <h2>
 
             <i data-lucide="graduation-cap"></i>
 
-            Meus Alunos
+            Minha Turma
 
         </h2>
 
-
         <p>
 
-            Consulte os alunos vinculados
-            à sua turma.
+            Consulte as informações da sua turma
+            e dos seus colegas.
 
         </p>
-
 
     </div>
 
 
-
     <!-- =========================================
-         RESUMO
+         CARDS DE RESUMO
     ========================================== -->
 
     <section class="dashboard-cards">
 
 
-        <!-- PROFESSOR -->
-
         <div class="dashboard-card">
-
 
             <div class="dashboard-card-icon">
 
-                <i data-lucide="presentation"></i>
+                <i data-lucide="graduation-cap"></i>
 
             </div>
-
-
-            <div>
-
-                <span>
-
-                    Professor
-
-                </span>
-
-
-                <strong>
-
-                    {{ professor['nome'] }}
-
-                </strong>
-
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- TURMA -->
-
-        <div class="dashboard-card">
-
-
-            <div class="dashboard-card-icon">
-
-                <i data-lucide="school"></i>
-
-            </div>
-
 
             <div>
 
@@ -128,60 +83,26 @@
 
                 </span>
 
-
                 <strong>
 
-                    {{ turma_nome or 'Não definida' }}
+                    {% if turma %}
+
+                        {{ turma['nome'] }}
+
+                    {% else %}
+
+                        Não definida
+
+                    {% endif %}
 
                 </strong>
 
-
             </div>
-
 
         </div>
 
 
-
-        <!-- ALUNOS -->
-
         <div class="dashboard-card">
-
-
-            <div class="dashboard-card-icon">
-
-                <i data-lucide="graduation-cap"></i>
-
-            </div>
-
-
-            <div>
-
-                <span>
-
-                    Total de alunos
-
-                </span>
-
-
-                <strong>
-
-                    {{ alunos|length }}
-
-                </strong>
-
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- STATUS -->
-
-        <div class="dashboard-card">
-
 
             <div class="dashboard-card-icon">
 
@@ -189,39 +110,61 @@
 
             </div>
 
-
             <div>
 
                 <span>
 
-                    Situação
+                    Curso
 
                 </span>
 
-
                 <strong>
 
-                    {% if alunos %}
+                    {% if turma %}
 
-                        Ativa
+                        {{ turma['curso'] }}
 
                     {% else %}
 
-                        Sem alunos
+                        Não informado
 
                     {% endif %}
 
                 </strong>
 
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="users"></i>
 
             </div>
 
+            <div>
+
+                <span>
+
+                    Colegas
+
+                </span>
+
+                <strong>
+
+                    {{ colegas|length }}
+
+                </strong>
+
+            </div>
 
         </div>
 
 
     </section>
-
 
 
     <!-- =========================================
@@ -233,35 +176,29 @@
 
         <div class="section-header">
 
-
             <div>
-
 
                 <h3>
 
                     <i data-lucide="school"></i>
 
-                    Minha turma
+                    Informações da turma
 
                 </h3>
 
-
                 <p>
 
-                    Informações sobre a turma
-                    vinculada ao seu perfil.
+                    Dados da turma vinculada ao seu
+                    cadastro.
 
                 </p>
 
-
             </div>
-
 
         </div>
 
 
-
-        {% if turma_nome %}
+        {% if turma %}
 
 
             <div class="form-row">
@@ -269,40 +206,74 @@
 
                 <div class="form-group">
 
-
                     <label>
 
                         Turma
 
                     </label>
 
-
                     <input
                         type="text"
-                        value="{{ turma_nome }}"
+                        value="{{ turma['nome'] }}"
                         disabled
                     >
-
 
                 </div>
 
 
                 <div class="form-group">
 
-
                     <label>
 
-                        Professor responsável
+                        Ano letivo
 
                     </label>
 
-
                     <input
                         type="text"
-                        value="{{ professor['nome'] }}"
+                        value="{{ turma['ano'] }}"
                         disabled
                     >
 
+                </div>
+
+
+            </div>
+
+
+            <div class="form-row">
+
+
+                <div class="form-group">
+
+                    <label>
+
+                        Turno
+
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ turma['turno'] }}"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+
+                        Curso
+
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ turma['curso'] }}"
+                        disabled
+                    >
 
                 </div>
 
@@ -314,7 +285,6 @@
 
 
             <div class="empty-message">
-
 
                 <div class="empty-icon">
 
@@ -322,21 +292,19 @@
 
                 </div>
 
-
                 <strong>
 
                     Nenhuma turma vinculada
 
                 </strong>
 
-
                 <span>
 
-                    Seu usuário ainda não possui
-                    uma turma vinculada pela Gestão Escolar.
+                    Sua conta ainda não está vinculada
+                    a uma turma. Procure a Gestão Escolar
+                    para atualizar seu cadastro.
 
                 </span>
-
 
             </div>
 
@@ -347,9 +315,8 @@
     </section>
 
 
-
     <!-- =========================================
-         LISTA DE ALUNOS
+         COLEGAS DE TURMA
     ========================================== -->
 
     <section class="content-card users-list">
@@ -357,55 +324,45 @@
 
         <div class="section-header">
 
-
             <div>
-
 
                 <h3>
 
                     <i data-lucide="users"></i>
 
-                    Alunos vinculados
+                    Colegas de turma
 
                 </h3>
 
-
                 <p>
 
-                    Lista dos alunos pertencentes
-                    à sua turma.
+                    Alunos que fazem parte da mesma
+                    turma que você.
 
                 </p>
-
 
             </div>
 
 
             <span class="total-badge">
 
-                {{ alunos|length }} aluno(s)
+                {{ colegas|length }} aluno(s)
 
             </span>
-
 
         </div>
 
 
-
-        {% if alunos %}
+        {% if colegas %}
 
 
             <div class="table-container">
 
-
                 <table>
-
 
                     <thead>
 
-
                         <tr>
-
 
                             <th>
 
@@ -413,98 +370,48 @@
 
                             </th>
 
-
                             <th>
 
                                 E-mail
 
                             </th>
 
-
-                            <th>
-
-                                Telefone
-
-                            </th>
-
-
-                            <th>
-
-                                Turma
-
-                            </th>
-
-
                         </tr>
 
-
                     </thead>
-
 
 
                     <tbody>
 
 
-                        {% for aluno in alunos %}
-
+                        {% for colega in colegas %}
 
                             <tr>
 
-
                                 <td>
-
 
                                     <strong>
 
-                                        {{ aluno['nome'] }}
+                                        {{ colega['nome'] }}
 
                                     </strong>
 
-
                                 </td>
-
-
 
                                 <td>
 
-                                    {{ aluno['email'] }}
+                                    {{ colega['email'] }}
 
                                 </td>
-
-
-
-                                <td>
-
-                                    {{ aluno['telefone'] or '-' }}
-
-                                </td>
-
-
-
-                                <td>
-
-
-                                    <span class="badge">
-
-                                        {{ aluno['turma'] or '-' }}
-
-                                    </span>
-
-
-                                </td>
-
 
                             </tr>
-
 
                         {% endfor %}
 
 
                     </tbody>
 
-
                 </table>
-
 
             </div>
 
@@ -514,28 +421,24 @@
 
             <div class="empty-message">
 
-
                 <div class="empty-icon">
 
-                    <i data-lucide="graduation-cap"></i>
+                    <i data-lucide="users"></i>
 
                 </div>
 
-
                 <strong>
 
-                    Nenhum aluno encontrado
+                    Nenhum colega encontrado
 
                 </strong>
 
-
                 <span>
 
-                    Não existem alunos vinculados
+                    Não existem outros alunos vinculados
                     à sua turma no momento.
 
                 </span>
-
 
             </div>
 
@@ -546,84 +449,50 @@
     </section>
 
 
-
     <!-- =========================================
-         AÇÕES
+         BOTÕES
     ========================================== -->
 
     <section class="content-card">
-
 
         <div class="form-buttons">
 
-
             <a
-                href="{{ url_for('professor') }}"
-                class="btn-secondary"
-            >
-
-                <i data-lucide="arrow-left"></i>
-
-                Voltar ao painel
-
-            </a>
-
-
-            <a
-                href="{{ url_for('perfil') }}"
+                href="{{ url_for('aluno') }}"
                 class="btn-login"
             >
 
-                <i data-lucide="user"></i>
+                <i data-lucide="house"></i>
 
-                Meu perfil
+                Voltar ao meu painel
 
             </a>
 
 
-        </div>
+            <a
+                href="{{ url_for('aluno_professores') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="presentation"></i>
+
+                Ver professores
+
+            </a>
 
 
-    </section>
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-secondary"
+            >
 
+                <i data-lucide="message-circle"></i>
 
+                Comunicação
 
-    <!-- =========================================
-         INFORMAÇÃO
-    ========================================== -->
-
-    <section class="content-card">
-
-
-        <div class="empty-message">
-
-
-            <div class="empty-icon">
-
-                <i data-lucide="shield-lock"></i>
-
-            </div>
-
-
-            <strong>
-
-                Acesso restrito
-
-            </strong>
-
-
-            <span>
-
-                Esta área apresenta somente os alunos
-                vinculados à turma do professor conectado.
-                Cada professor visualiza apenas seus
-                próprios alunos.
-
-            </span>
-
+            </a>
 
         </div>
-
 
     </section>
 

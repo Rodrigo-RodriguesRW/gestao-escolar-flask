@@ -47,7 +47,9 @@ def criar_tabelas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titulo TEXT NOT NULL,
             mensagem TEXT NOT NULL,
-            data TEXT NOT NULL
+            data TEXT NOT NULL,
+            destino TEXT DEFAULT 'todos',
+            turma TEXT
         )
     """)
 
@@ -70,6 +72,10 @@ def criar_tabelas():
     # ATUALIZAR BANCO EXISTENTE
     # =========================================
 
+    # -----------------------------------------
+    # VERIFICAR COLUNAS DE USUÁRIOS
+    # -----------------------------------------
+
     colunas = cursor.execute(
         "PRAGMA table_info(usuarios)"
     ).fetchall()
@@ -87,6 +93,58 @@ def criar_tabelas():
         """)
 
         conexao.commit()
+
+    # -----------------------------------------
+    # VERIFICAR COLUNAS DE AVISOS
+    # -----------------------------------------
+
+    colunas_avisos = cursor.execute(
+        "PRAGMA table_info(avisos)"
+    ).fetchall()
+
+    nomes_colunas_avisos = [
+        coluna["name"]
+        for coluna in colunas_avisos
+    ]
+
+    # -----------------------------------------
+    # ADICIONAR DESTINO
+    # -----------------------------------------
+
+    if "destino" not in nomes_colunas_avisos:
+
+        cursor.execute("""
+            ALTER TABLE avisos
+            ADD COLUMN destino TEXT DEFAULT 'todos'
+        """)
+
+        conexao.commit()
+
+    # -----------------------------------------
+    # ADICIONAR TURMA
+    # -----------------------------------------
+
+    if "turma" not in nomes_colunas_avisos:
+
+        cursor.execute("""
+            ALTER TABLE avisos
+            ADD COLUMN turma TEXT
+        """)
+
+        conexao.commit()
+
+    # -----------------------------------------
+    # CORRIGIR AVISOS ANTIGOS
+    # -----------------------------------------
+
+    cursor.execute("""
+        UPDATE avisos
+        SET destino = 'todos'
+        WHERE destino IS NULL
+        OR destino = ''
+    """)
+
+    conexao.commit()
 
     conexao.close()
 

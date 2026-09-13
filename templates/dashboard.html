@@ -1,484 +1,506 @@
-
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
 
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta charset="UTF-8">
 
-    <title>Dashboard | Gestão Escolar</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
+<title>Dashboard | Gestão Escolar</title>
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
 
 </head>
 
-
 <body>
 
-
 {% include "menu.html" %}
-
 
 <main class="dashboard">
 
 
-    <!-- =========================================
-         TÍTULO
-    ========================================== -->
+<!-- =========================================
+     TÍTULO
+========================================== -->
 
-    <div class="dashboard-title">
+<div class="dashboard-title">
 
-        <h2>
-            Dashboard
-        </h2>
+    <h2>
+        Dashboard
+    </h2>
 
-        <p>
-            Visão geral da Gestão Escolar.
-        </p>
+    <p>
+        Visão geral da Gestão Escolar.
+    </p>
+
+</div>
+
+
+
+<!-- =========================================
+     CARDS
+========================================== -->
+
+<section class="dashboard-cards">
+
+
+    <div class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i data-lucide="users"></i>
+        </div>
+
+        <div>
+
+            <span>
+                Usuários
+            </span>
+
+            <strong>
+                {{ total_usuarios }}
+            </strong>
+
+        </div>
 
     </div>
 
 
 
-    <!-- =========================================
-         CARDS
-    ========================================== -->
+    <div class="dashboard-card">
 
-    <section class="dashboard-cards">
+        <div class="dashboard-card-icon">
+            <i data-lucide="school"></i>
+        </div>
 
+        <div>
 
-        <div class="dashboard-card">
+            <span>
+                Turmas
+            </span>
 
-            <div class="dashboard-card-icon">
-                👥
-            </div>
-
-            <div>
-
-                <span>
-                    Usuários
-                </span>
-
-                <strong>
-                    {{ total_usuarios }}
-                </strong>
-
-            </div>
+            <strong>
+                {{ total_turmas }}
+            </strong>
 
         </div>
 
+    </div>
 
 
-        <div class="dashboard-card">
 
-            <div class="dashboard-card-icon">
-                🏫
-            </div>
+    <div class="dashboard-card">
 
-            <div>
+        <div class="dashboard-card-icon">
+            <i data-lucide="graduation-cap"></i>
+        </div>
 
-                <span>
-                    Turmas
-                </span>
+        <div>
 
-                <strong>
-                    {{ total_turmas }}
-                </strong>
+            <span>
+                Alunos
+            </span>
 
-            </div>
+            <strong>
+                {{ total_alunos }}
+            </strong>
 
         </div>
 
+    </div>
 
 
-        <div class="dashboard-card">
 
-            <div class="dashboard-card-icon">
-                🎓
-            </div>
+    <div class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i data-lucide="presentation"></i>
+        </div>
+
+        <div>
+
+            <span>
+                Professores
+            </span>
+
+            <strong>
+                {{ total_professores }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i data-lucide="megaphone"></i>
+        </div>
+
+        <div>
+
+            <span>
+                Avisos
+            </span>
+
+            <strong>
+                {{ total_avisos }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- =========================================
+     ACESSO RÁPIDO
+========================================== -->
+
+<section class="content-card">
+
+    <div class="section-header">
+
+        <div>
+
+            <h3>
+
+                <i data-lucide="zap"></i>
+
+                Acesso rápido
+
+            </h3>
+
+            <p>
+                Acesse rapidamente as principais
+                áreas do sistema.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="quick-actions">
+
+
+        <a
+            href="{{ url_for('usuarios_page') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                <i data-lucide="users"></i>
+            </span>
+
+            <strong>
+                Usuários
+            </strong>
+
+            <small>
+                Cadastrar e gerenciar usuários
+            </small>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('turmas_page') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                <i data-lucide="school"></i>
+            </span>
+
+            <strong>
+                Turmas
+            </strong>
+
+            <small>
+                Cadastrar e organizar turmas
+            </small>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('avisos_page') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                <i data-lucide="megaphone"></i>
+            </span>
+
+            <strong>
+                Avisos
+            </strong>
+
+            <small>
+                Publicar comunicados escolares
+            </small>
+
+        </a>
+
+
+
+        <!-- =====================================
+             COMUNICAÇÃO
+        ====================================== -->
+
+        <a
+            href="{{ url_for('comunicacao') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                <i data-lucide="messages-square"></i>
+            </span>
+
+            <strong>
+                Comunicação
+            </strong>
+
+            <small>
+                Conversar com professores e alunos
+            </small>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('perfil') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                <i data-lucide="user"></i>
+            </span>
+
+            <strong>
+                Meu Perfil
+            </strong>
+
+            <small>
+                Atualizar meus dados
+            </small>
+
+        </a>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================
+     RESUMO DO SISTEMA
+========================================== -->
+
+<section class="content-card">
+
+    <div class="section-header">
+
+        <div>
+
+            <h3>
+
+                <i data-lucide="chart-no-axes-column"></i>
+
+                Resumo do sistema
+
+            </h3>
+
+            <p>
+                Informações gerais da comunidade
+                escolar cadastrada.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="dashboard-summary">
+
+
+        <div class="summary-item">
+
+            <span class="summary-icon">
+                <i data-lucide="graduation-cap"></i>
+            </span>
 
             <div>
-
-                <span>
-                    Alunos
-                </span>
 
                 <strong>
                     {{ total_alunos }}
                 </strong>
 
+                <span>
+                    aluno(s) cadastrado(s)
+                </span>
+
             </div>
 
         </div>
 
 
 
-        <div class="dashboard-card">
+        <div class="summary-item">
 
-            <div class="dashboard-card-icon">
-                👨‍🏫
-            </div>
+            <span class="summary-icon">
+                <i data-lucide="presentation"></i>
+            </span>
 
             <div>
-
-                <span>
-                    Professores
-                </span>
 
                 <strong>
                     {{ total_professores }}
                 </strong>
 
+                <span>
+                    professor(es) cadastrado(s)
+                </span>
+
             </div>
 
         </div>
 
 
 
-        <div class="dashboard-card">
+        <div class="summary-item">
 
-            <div class="dashboard-card-icon">
-                📢
-            </div>
+            <span class="summary-icon">
+                <i data-lucide="school"></i>
+            </span>
 
             <div>
 
+                <strong>
+                    {{ total_turmas }}
+                </strong>
+
                 <span>
-                    Avisos
+                    turma(s) cadastrada(s)
                 </span>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="summary-item">
+
+            <span class="summary-icon">
+                <i data-lucide="megaphone"></i>
+            </span>
+
+            <div>
 
                 <strong>
                     {{ total_avisos }}
                 </strong>
 
-            </div>
-
-        </div>
-
-
-    </section>
-
-
-
-    <!-- =========================================
-         ACESSO RÁPIDO
-    ========================================== -->
-
-    <section class="content-card">
-
-        <div class="section-header">
-
-            <div>
-
-                <h3>
-                    ⚡ Acesso rápido
-                </h3>
-
-                <p>
-                    Acesse rapidamente as principais
-                    áreas do sistema.
-                </p>
+                <span>
+                    aviso(s) publicado(s)
+                </span>
 
             </div>
 
         </div>
 
 
+    </div>
 
-        <div class="quick-actions">
-
-
-            <a
-                href="{{ url_for('usuarios_page') }}"
-                class="quick-action"
-            >
-
-                <span class="quick-action-icon">
-                    👥
-                </span>
-
-                <strong>
-                    Usuários
-                </strong>
-
-                <small>
-                    Cadastrar e gerenciar usuários
-                </small>
-
-            </a>
+</section>
 
 
 
-            <a
-                href="{{ url_for('turmas_page') }}"
-                class="quick-action"
-            >
+<!-- =========================================
+     COMUNICAÇÃO ESCOLAR
+========================================== -->
 
-                <span class="quick-action-icon">
-                    🏫
-                </span>
+<section class="content-card">
 
-                <strong>
-                    Turmas
-                </strong>
+    <div class="section-header">
 
-                <small>
-                    Cadastrar e organizar turmas
-                </small>
+        <div>
 
-            </a>
+            <h3>
 
+                <i data-lucide="messages-square"></i>
 
+                Comunicação Escolar
 
-            <a
-                href="{{ url_for('avisos_page') }}"
-                class="quick-action"
-            >
+            </h3>
 
-                <span class="quick-action-icon">
-                    📢
-                </span>
-
-                <strong>
-                    Avisos
-                </strong>
-
-                <small>
-                    Publicar comunicados escolares
-                </small>
-
-            </a>
-
-
-
-            <!-- =====================================
-                 COMUNICAÇÃO
-            ====================================== -->
-
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="quick-action"
-            >
-
-                <span class="quick-action-icon">
-                    💬
-                </span>
-
-                <strong>
-                    Comunicação
-                </strong>
-
-                <small>
-                    Conversar com professores e alunos
-                </small>
-
-            </a>
-
-
-
-            <a
-                href="{{ url_for('perfil') }}"
-                class="quick-action"
-            >
-
-                <span class="quick-action-icon">
-                    👤
-                </span>
-
-                <strong>
-                    Meu Perfil
-                </strong>
-
-                <small>
-                    Atualizar meus dados
-                </small>
-
-            </a>
-
+            <p>
+                Comunicação direta entre a Gestão,
+                professores e alunos.
+            </p>
 
         </div>
 
-    </section>
+    </div>
 
 
 
-    <!-- =========================================
-         RESUMO DO SISTEMA
-    ========================================== -->
+    <div class="form-buttons">
 
-    <section class="content-card">
 
-        <div class="section-header">
+        <a
+            href="{{ url_for('comunicacao') }}"
+            class="btn-login"
+        >
 
-            <div>
+            <i data-lucide="messages-square"></i>
 
-                <h3>
-                    📊 Resumo do sistema
-                </h3>
+            Abrir Comunicação
 
-                <p>
-                    Informações gerais da comunidade
-                    escolar cadastrada.
-                </p>
+        </a>
 
-            </div>
 
-        </div>
+    </div>
 
 
-
-        <div class="dashboard-summary">
-
-
-            <div class="summary-item">
-
-                <span class="summary-icon">
-                    🎓
-                </span>
-
-                <div>
-
-                    <strong>
-                        {{ total_alunos }}
-                    </strong>
-
-                    <span>
-                        aluno(s) cadastrado(s)
-                    </span>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="summary-item">
-
-                <span class="summary-icon">
-                    👨‍🏫
-                </span>
-
-                <div>
-
-                    <strong>
-                        {{ total_professores }}
-                    </strong>
-
-                    <span>
-                        professor(es) cadastrado(s)
-                    </span>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="summary-item">
-
-                <span class="summary-icon">
-                    🏫
-                </span>
-
-                <div>
-
-                    <strong>
-                        {{ total_turmas }}
-                    </strong>
-
-                    <span>
-                        turma(s) cadastrada(s)
-                    </span>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="summary-item">
-
-                <span class="summary-icon">
-                    📢
-                </span>
-
-                <div>
-
-                    <strong>
-                        {{ total_avisos }}
-                    </strong>
-
-                    <span>
-                        aviso(s) publicado(s)
-                    </span>
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================================
-         COMUNICAÇÃO ESCOLAR
-    ========================================== -->
-
-    <section class="content-card">
-
-        <div class="section-header">
-
-            <div>
-
-                <h3>
-                    💬 Comunicação Escolar
-                </h3>
-
-                <p>
-                    Comunicação direta entre a Gestão,
-                    professores e alunos.
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <div class="form-buttons">
-
-
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="btn-login"
-            >
-
-                💬 Abrir Comunicação
-
-            </a>
-
-
-        </div>
-
-
-    </section>
+</section>
 
 
 </main>
 
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+    lucide.createIcons();
+</script>
 
 </body>
 
 </html>
-

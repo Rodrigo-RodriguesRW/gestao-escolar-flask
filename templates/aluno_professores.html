@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Professores | Gestão Escolar</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+</head>
+
+
+<body>
+
+
+{% include "menu.html" %}
+
+
+<!-- =========================================
+     CONTEÚDO
+========================================= -->
+
+<main class="dashboard">
+
+
+    <!-- =========================================
+         TÍTULO
+    ========================================== -->
+
+    <div class="dashboard-title">
+
+        <h2>
+
+            <i data-lucide="presentation"></i>
+
+            Meus Professores
+
+        </h2>
+
+        <p>
+
+            Consulte os professores relacionados
+            à sua turma.
+
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         RESUMO
+    ========================================== -->
+
+    <section class="dashboard-cards">
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="presentation"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Professores
+
+                </span>
+
+                <strong>
+
+                    {{ professores|length }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="graduation-cap"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Minha turma
+
+                </span>
+
+                <strong>
+
+                    {{ aluno['turma'] or 'Não definida' }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+
+                <i data-lucide="message-circle"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+
+                    Comunicação
+
+                </span>
+
+                <strong>
+
+                    Ativa
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =========================================
+         LISTA DE PROFESSORES
+    ========================================== -->
+
+    <section class="content-card users-list">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    <i data-lucide="presentation"></i>
+
+                    Professores da turma
+
+                </h3>
+
+                <p>
+
+                    Professores relacionados à sua turma
+                    e disponíveis para comunicação.
+
+                </p>
+
+            </div>
+
+
+            <span class="total-badge">
+
+                {{ professores|length }} professor(es)
+
+            </span>
+
+        </div>
+
+
+        {% if professores %}
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+
+                                Nome
+
+                            </th>
+
+                            <th>
+
+                                E-mail
+
+                            </th>
+
+                            <th>
+
+                                Telefone
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for professor in professores %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+
+                                        {{ professor['nome'] }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ professor['email'] }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ professor['telefone'] or '-' }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-message">
+
+                <div class="empty-icon">
+
+                    <i data-lucide="presentation"></i>
+
+                </div>
+
+                <strong>
+
+                    Nenhum professor encontrado
+
+                </strong>
+
+                <span>
+
+                    Não existem professores vinculados
+                    à sua turma no momento.
+
+                </span>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+    <!-- =========================================
+         COMUNICAÇÃO
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    <i data-lucide="messages-square"></i>
+
+                    Comunicação Escolar
+
+                </h3>
+
+                <p>
+
+                    Entre em contato com os professores
+                    da sua turma.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="empty-message">
+
+            <div class="empty-icon">
+
+                <i data-lucide="message-circle"></i>
+
+            </div>
+
+
+            <strong>
+
+                Comunicação disponível
+
+            </strong>
+
+
+            <span>
+
+                Você pode iniciar uma conversa
+                com os professores da sua turma.
+
+            </span>
+
+
+            <br>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="message-circle"></i>
+
+                Abrir comunicação
+
+            </a>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =========================================
+         BOTÕES
+    ========================================== -->
+
+    <section class="content-card">
+
+
+        <div class="form-buttons">
+
+
+            <a
+                href="{{ url_for('aluno') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="house"></i>
+
+                Voltar ao meu painel
+
+            </a>
+
+
+            <a
+                href="{{ url_for('aluno_turma') }}"
+                class="btn-login"
+            >
+
+                <i data-lucide="graduation-cap"></i>
+
+                Minha turma
+
+            </a>
+
+
+            <a
+                href="{{ url_for('comunicacao') }}"
+                class="btn-secondary"
+            >
+
+                <i data-lucide="message-circle"></i>
+
+                Comunicação
+
+            </a>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -17,6 +16,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -37,12 +39,18 @@
     <div class="dashboard-title">
 
         <h2>
-            💬 Comunicação Escolar
+
+            <i data-lucide="messages-square"></i>
+
+            Comunicação Escolar
+
         </h2>
 
         <p>
+
             Entre em contato com professores,
             alunos e equipe da Gestão Escolar.
+
         </p>
 
     </div>
@@ -61,12 +69,18 @@
             <div>
 
                 <h3>
-                    👥 Contatos disponíveis
+
+                    <i data-lucide="users"></i>
+
+                    Contatos disponíveis
+
                 </h3>
 
                 <p>
+
                     Selecione uma pessoa para iniciar
                     ou continuar uma conversa.
+
                 </p>
 
             </div>
@@ -138,19 +152,19 @@
 
                                     {% if contato['tipo'] == 'professor' %}
 
-                                        👨‍🏫
+                                        <i data-lucide="presentation"></i>
 
                                     {% elif contato['tipo'] == 'aluno' %}
 
-                                        🎓
+                                        <i data-lucide="graduation-cap"></i>
 
                                     {% elif contato['tipo'] == 'gestao' %}
 
-                                        🏫
+                                        <i data-lucide="school"></i>
 
                                     {% else %}
 
-                                        👤
+                                        <i data-lucide="user"></i>
 
                                     {% endif %}
 
@@ -167,7 +181,9 @@
 
                                     <span class="badge">
 
-                                        🔴 {{ contato['nao_lidas'] }}
+                                        <i data-lucide="circle-alert"></i>
+
+                                        {{ contato['nao_lidas'] }}
                                         nova(s)
 
                                     </span>
@@ -240,7 +256,9 @@
                                     class="btn-login"
                                 >
 
-                                    💬 Conversar
+                                    <i data-lucide="message-circle"></i>
+
+                                    Conversar
 
                                 </a>
 
@@ -268,12 +286,16 @@
 
 
                 <div class="empty-icon">
-                    💬
+
+                    <i data-lucide="messages-square"></i>
+
                 </div>
 
 
                 <strong>
+
                     Nenhum contato disponível
+
                 </strong>
 
 
@@ -306,12 +328,16 @@
 
 
             <div class="empty-icon">
-                🔒
+
+                <i data-lucide="lock"></i>
+
             </div>
 
 
             <strong>
+
                 Comunicação segura
+
             </strong>
 
 
@@ -322,7 +348,9 @@
 
                 <br><br>
 
-                🔴 Mensagens novas aparecerão
+                <i data-lucide="circle-alert"></i>
+
+                Mensagens novas aparecerão
                 identificadas ao lado do contato.
 
             </span>
@@ -337,7 +365,18 @@
 </main>
 
 
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
 </body>
 
 </html>
-

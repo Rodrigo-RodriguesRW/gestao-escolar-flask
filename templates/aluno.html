@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -17,6 +16,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -43,7 +45,9 @@
 
         <h2>
 
-            Olá, {{ aluno['nome'] }}! 👋
+            Olá, {{ aluno['nome'] }}!
+
+            <i data-lucide="hand"></i>
 
         </h2>
 
@@ -71,7 +75,7 @@
 
             <div class="dashboard-card-icon">
 
-                🎓
+                <i data-lucide="graduation-cap"></i>
 
             </div>
 
@@ -103,7 +107,7 @@
 
             <div class="dashboard-card-icon">
 
-                📚
+                <i data-lucide="book-open"></i>
 
             </div>
 
@@ -143,7 +147,7 @@
 
             <div class="dashboard-card-icon">
 
-                👥
+                <i data-lucide="users"></i>
 
             </div>
 
@@ -175,7 +179,7 @@
 
             <div class="dashboard-card-icon">
 
-                📢
+                <i data-lucide="megaphone"></i>
 
             </div>
 
@@ -217,7 +221,9 @@
 
                 <h3>
 
-                    ⚡ Acesso rápido
+                    <i data-lucide="zap"></i>
+
+                    Acesso rápido
 
                 </h3>
 
@@ -247,7 +253,7 @@
 
                 <span class="quick-action-icon">
 
-                    💬
+                    <i data-lucide="message-circle"></i>
 
                 </span>
 
@@ -278,7 +284,7 @@
 
                 <span class="quick-action-icon">
 
-                    👤
+                    <i data-lucide="user"></i>
 
                 </span>
 
@@ -303,13 +309,13 @@
             <!-- AVISOS -->
 
             <a
-                href="#avisos"
+                href="{{ url_for('aluno_avisos') }}"
                 class="quick-action"
             >
 
                 <span class="quick-action-icon">
 
-                    📢
+                    <i data-lucide="megaphone"></i>
 
                 </span>
 
@@ -351,7 +357,9 @@
 
                 <h3>
 
-                    🎓 Minha turma
+                    <i data-lucide="graduation-cap"></i>
+
+                    Minha turma
 
                 </h3>
 
@@ -472,7 +480,7 @@
 
                 <div class="empty-icon">
 
-                    🏫
+                    <i data-lucide="school"></i>
 
                 </div>
 
@@ -520,7 +528,9 @@
 
                 <h3>
 
-                    📢 Avisos da escola
+                    <i data-lucide="megaphone"></i>
+
+                    Avisos da escola
 
                 </h3>
 
@@ -565,14 +575,18 @@
 
                                 <h4>
 
-                                    📢 {{ aviso['titulo'] }}
+                                    <i data-lucide="megaphone"></i>
+
+                                    {{ aviso['titulo'] }}
 
                                 </h4>
 
 
                                 <small>
 
-                                    📅 {{ aviso['data'] }}
+                                    <i data-lucide="calendar-days"></i>
+
+                                    {{ aviso['data'] }}
 
                                 </small>
 
@@ -612,7 +626,7 @@
 
                 <div class="empty-icon">
 
-                    📢
+                    <i data-lucide="megaphone"></i>
 
                 </div>
 
@@ -656,7 +670,9 @@
 
                 <h3>
 
-                    👤 Meu perfil
+                    <i data-lucide="user"></i>
+
+                    Meu perfil
 
                 </h3>
 
@@ -784,7 +800,9 @@
 
                 <h3>
 
-                    💬 Comunicação Escolar
+                    <i data-lucide="messages-square"></i>
+
+                    Comunicação Escolar
 
                 </h3>
 
@@ -808,7 +826,7 @@
 
             <div class="empty-icon">
 
-                💬
+                <i data-lucide="message-circle"></i>
 
             </div>
 
@@ -836,7 +854,9 @@
                 class="btn-login"
             >
 
-                💬 Abrir comunicação
+                <i data-lucide="message-circle"></i>
+
+                Abrir comunicação
 
             </a>
 
@@ -863,7 +883,9 @@
                 class="btn-login"
             >
 
-                💬 Conversar com professor
+                <i data-lucide="message-circle"></i>
+
+                Conversar com professor
 
             </a>
 
@@ -873,7 +895,9 @@
                 class="btn-secondary"
             >
 
-                👤 Meu perfil
+                <i data-lucide="user"></i>
+
+                Meu perfil
 
             </a>
 
@@ -897,7 +921,7 @@
 
             <div class="empty-icon">
 
-                🔐
+                <i data-lucide="shield-lock"></i>
 
             </div>
 
@@ -927,7 +951,18 @@
 </main>
 
 
+
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
 </body>
 
 </html>
-
