@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -17,6 +16,9 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 
@@ -44,7 +46,9 @@
 
         <h2>
 
-            🏫 {{ turma['nome'] }}
+            <i data-lucide="school"></i>
+
+            {{ turma['nome'] }}
 
         </h2>
 
@@ -75,7 +79,7 @@
 
             <div class="dashboard-card-icon">
 
-                📅
+                <i data-lucide="calendar-days"></i>
 
             </div>
 
@@ -111,7 +115,7 @@
 
             <div class="dashboard-card-icon">
 
-                🕐
+                <i data-lucide="clock-3"></i>
 
             </div>
 
@@ -147,7 +151,7 @@
 
             <div class="dashboard-card-icon">
 
-                📚
+                <i data-lucide="book-open"></i>
 
             </div>
 
@@ -183,7 +187,7 @@
 
             <div class="dashboard-card-icon">
 
-                🎓
+                <i data-lucide="graduation-cap"></i>
 
             </div>
 
@@ -230,7 +234,9 @@
 
                 <h3>
 
-                    📋 Informações da turma
+                    <i data-lucide="clipboard-list"></i>
+
+                    Informações da turma
 
                 </h3>
 
@@ -370,7 +376,9 @@
 
                 <h3>
 
-                    🎓 Alunos da turma
+                    <i data-lucide="graduation-cap"></i>
+
+                    Alunos da turma
 
                 </h3>
 
@@ -519,7 +527,7 @@
 
                 <div class="empty-icon">
 
-                    🎓
+                    <i data-lucide="graduation-cap"></i>
 
                 </div>
 
@@ -564,7 +572,9 @@
                 class="btn-secondary"
             >
 
-                ← Voltar para turmas
+                <i data-lucide="arrow-left"></i>
+
+                Voltar para turmas
 
             </a>
 
@@ -574,7 +584,9 @@
                 class="btn-login"
             >
 
-                ✏️ Editar turma
+                <i data-lucide="pencil"></i>
+
+                Editar turma
 
             </a>
 
@@ -598,7 +610,7 @@
 
             <div class="empty-icon">
 
-                🔗
+                <i data-lucide="link-2"></i>
 
             </div>
 
@@ -628,7 +640,17 @@
 </main>
 
 
+<!-- =========================================
+     ATIVAR ÍCONES LUCIDE
+========================================== -->
+
+<script>
+
+    lucide.createIcons();
+
+</script>
+
+
 </body>
 
 </html>
-
