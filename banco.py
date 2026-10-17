@@ -65,6 +65,27 @@ def criar_tabelas():
             FOREIGN KEY (destinatario_id) REFERENCES usuarios(id)
         )
     """)
+    # =========================================
+    # CONTROLAR AVISOS LIDOS POR USUÁRIO
+    # =========================================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS avisos_lidos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            aviso_id INTEGER NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            data_leitura TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE (aviso_id, usuario_id),
+
+            FOREIGN KEY (aviso_id)
+                REFERENCES avisos(id),
+
+            FOREIGN KEY (usuario_id)
+                REFERENCES usuarios(id)
+        )
+    """)
+
 
     conexao.commit()
 

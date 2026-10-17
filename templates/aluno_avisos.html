@@ -1,14 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Avisos | Gestão Escolar</title>
 
@@ -17,465 +13,420 @@
         href="{{ url_for('static', filename='style.css') }}"
     >
 
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
 </head>
-
 
 <body>
 
+    {% include "menu.html" %}
 
-{% include "menu.html" %}
+    <main class="dashboard">
 
-
-<!-- =========================================
-     CONTEÚDO
-========================================= -->
-
-<main class="dashboard">
-
-
-    <!-- =========================================
-         TÍTULO
-    ========================================== -->
-
-    <div class="dashboard-title">
-
-        <h2>
-
-            <i data-lucide="megaphone"></i>
-
-            Avisos da Escola
-
-        </h2>
-
-        <p>
-
-            Acompanhe os comunicados publicados
-            pela Gestão Escolar.
-
-        </p>
-
-    </div>
-
-
-    <!-- =========================================
-         RESUMO
-    ========================================== -->
-
-    <section class="dashboard-cards">
-
-
-        <div class="dashboard-card">
-
-            <div class="dashboard-card-icon">
-
+        <!-- TÍTULO -->
+        <div class="dashboard-title">
+            <h2>
                 <i data-lucide="megaphone"></i>
+                Avisos da Escola
+            </h2>
 
-            </div>
-
-            <div>
-
-                <span>
-
-                    Avisos publicados
-
-                </span>
-
-                <strong>
-
-                    {{ avisos|length }}
-
-                </strong>
-
-            </div>
-
+            <p>
+                Acompanhe os comunicados publicados
+                pela Gestão Escolar.
+            </p>
         </div>
 
+        <!-- RESUMO -->
+        <section class="dashboard-cards">
 
-        <div class="dashboard-card">
-
-            <div class="dashboard-card-icon">
-
-                <i data-lucide="graduation-cap"></i>
-
-            </div>
-
-            <div>
-
-                <span>
-
-                    Área do aluno
-
-                </span>
-
-                <strong>
-
-                    Aluno
-
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="dashboard-card">
-
-            <div class="dashboard-card-icon">
-
-                <i data-lucide="school"></i>
-
-            </div>
-
-            <div>
-
-                <span>
-
-                    Gestão Escolar
-
-                </span>
-
-                <strong>
-
-                    Ativa
-
-                </strong>
-
-            </div>
-
-        </div>
-
-
-    </section>
-
-
-    <!-- =========================================
-         AVISOS
-    ========================================== -->
-
-    <section class="content-card">
-
-
-        <div class="section-header">
-
-            <div>
-
-                <h3>
-
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">
                     <i data-lucide="megaphone"></i>
+                </div>
 
-                    Comunicados da escola
+                <div>
+                    <span>Avisos nesta página</span>
+                    <strong>{{ avisos|length }}</strong>
+                </div>
+            </div>
 
-                </h3>
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">
+                    <i data-lucide="graduation-cap"></i>
+                </div>
 
-                <p>
+                <div>
+                    <span>Área do aluno</span>
+                    <strong>Aluno</strong>
+                </div>
+            </div>
 
-                    Informações e comunicados publicados
-                    pela Gestão Escolar.
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">
+                    <i data-lucide="school"></i>
+                </div>
 
-                </p>
+                <div>
+                    <span>Gestão Escolar</span>
+                    <strong>Ativa</strong>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- LISTA DE AVISOS -->
+        <section class="content-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h3>
+                        <i data-lucide="megaphone"></i>
+                        Comunicados da escola
+                    </h3>
+
+                    <p>
+                        Informações e comunicados publicados
+                        pela Gestão Escolar.
+                    </p>
+                </div>
+
+                <span class="total-badge">
+                    {% if total_registros is defined %}
+                        {{ total_registros }} aviso(s)
+                    {% else %}
+                        {{ avisos|length }} aviso(s)
+                    {% endif %}
+                </span>
 
             </div>
 
+            {% if avisos %}
 
-            <span class="total-badge">
+                <div class="avisos-container">
 
-                {{ avisos|length }} aviso(s)
+                    {% for aviso in avisos %}
 
-            </span>
+                        <div class="aviso-card">
 
-        </div>
+                            <div class="aviso-header">
+                                <div>
+                                    <h4>
+                                        <i data-lucide="megaphone"></i>
+                                        {{ aviso['titulo'] }}
+                                    </h4>
 
+                                    <small>
+                                        <i data-lucide="calendar-days"></i>
+                                        {{ aviso['data'] }}
+                                    </small>
+                                </div>
+                            </div>
 
-        {% if avisos %}
+                            <div class="aviso-content">
+                                <p>{{ aviso['mensagem'] }}</p>
+                            </div>
 
+                            <!-- STATUS DE LEITURA -->
+                            <div class="aviso-leitura">
 
-            <div class="avisos-container">
+                                {% if aviso['lido'] %}
 
+                                    <span class="aviso-status-lido">
+                                        <i data-lucide="check-check"></i>
+                                        Aviso lido
+                                    </span>
 
-                {% for aviso in avisos %}
+                                {% else %}
 
+                                    <span class="aviso-status-pendente">
+                                        <i data-lucide="bell"></i>
+                                        Não lido
+                                    </span>
 
-                    <div class="aviso-card">
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('marcar_aviso_lido', id=aviso['id']) }}"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn-marcar-lido"
+                                        >
+                                            <i data-lucide="check"></i>
+                                            Marcar como lido
+                                        </button>
+                                    </form>
 
-
-                        <div class="aviso-header">
-
-
-                            <div>
-
-                                <h4>
-
-                                    <i data-lucide="megaphone"></i>
-
-                                    {{ aviso['titulo'] }}
-
-                                </h4>
-
-
-                                <small>
-
-                                    <i data-lucide="calendar-days"></i>
-
-                                    {{ aviso['data'] }}
-
-                                </small>
+                                {% endif %}
 
                             </div>
 
-
                         </div>
 
-
-                        <div class="aviso-content">
-
-                            <p>
-
-                                {{ aviso['mensagem'] }}
-
-                            </p>
-
-                        </div>
-
-
-                    </div>
-
-
-                {% endfor %}
-
-
-            </div>
-
-
-        {% else %}
-
-
-            <div class="empty-message">
-
-
-                <div class="empty-icon">
-
-                    <i data-lucide="megaphone"></i>
+                    {% endfor %}
 
                 </div>
 
+            {% else %}
 
-                <strong>
+                <div class="empty-message">
 
-                    Nenhum aviso publicado
+                    <div class="empty-icon">
+                        <i data-lucide="megaphone"></i>
+                    </div>
 
-                </strong>
+                    <strong>Nenhum aviso publicado</strong>
 
+                    <span>
+                        Quando a Gestão Escolar publicar
+                        um comunicado, ele aparecerá aqui.
+                    </span>
 
-                <span>
+                </div>
 
-                    Quando a Gestão Escolar publicar
-                    um comunicado, ele aparecerá aqui.
+            {% endif %}
 
-                </span>
+        </section>
 
+        <!-- PAGINAÇÃO COMPACTA -->
+        {% if total_paginas is defined and total_paginas > 1 %}
 
-            </div>
+            <section
+                class="content-card"
+                style="padding: 14px 18px;"
+            >
 
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                ">
+
+                    <small style="color: var(--text-secondary, #64748b);">
+                        Página {{ pagina }} de {{ total_paginas }}
+                    </small>
+
+                    <nav
+                        aria-label="Navegação entre páginas de avisos"
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            flex-wrap: wrap;
+                        "
+                    >
+
+                        <!-- ANTERIOR -->
+                        {% if pagina > 1 %}
+
+                            <a
+                                href="{{ url_for('aluno_avisos', pagina=pagina-1) }}"
+                                class="btn-secondary"
+                                style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 3px;
+                                    padding: 6px 9px;
+                                    font-size: 13px;
+                                    text-decoration: none;
+                                "
+                            >
+                                <i
+                                    data-lucide="chevron-left"
+                                    style="width: 15px; height: 15px;"
+                                ></i>
+                                Anterior
+                            </a>
+
+                        {% endif %}
+
+                        <!-- NÚMEROS DAS PÁGINAS -->
+                        {% for numero in range(1, total_paginas + 1) %}
+
+                            {% if numero == 1
+                                or numero == total_paginas
+                                or (numero >= pagina - 1 and numero <= pagina + 1) %}
+
+                                <a
+                                    href="{{ url_for('aluno_avisos', pagina=numero) }}"
+                                    {% if numero == pagina %}
+                                        class="btn-login"
+                                        aria-current="page"
+                                    {% else %}
+                                        class="btn-secondary"
+                                    {% endif %}
+                                    style="
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        width: 32px;
+                                        height: 32px;
+                                        padding: 0;
+                                        font-size: 13px;
+                                        text-decoration: none;
+                                        box-sizing: border-box;
+                                    "
+                                >
+                                    {{ numero }}
+                                </a>
+
+                            {% elif numero == pagina - 2
+                                or numero == pagina + 2 %}
+
+                                <span style="
+                                    padding: 0 2px;
+                                    color: #64748b;
+                                    font-size: 14px;
+                                ">
+                                    …
+                                </span>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                        <!-- PRÓXIMA -->
+                        {% if pagina < total_paginas %}
+
+                            <a
+                                href="{{ url_for('aluno_avisos', pagina=pagina+1) }}"
+                                class="btn-login"
+                                style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 3px;
+                                    padding: 6px 9px;
+                                    font-size: 13px;
+                                    text-decoration: none;
+                                "
+                            >
+                                Próxima
+                                <i
+                                    data-lucide="chevron-right"
+                                    style="width: 15px; height: 15px;"
+                                ></i>
+                            </a>
+
+                        {% endif %}
+
+                    </nav>
+
+                </div>
+
+            </section>
 
         {% endif %}
 
+        <!-- ACESSO RÁPIDO -->
+        <section class="content-card">
 
-    </section>
+            <div class="section-header">
 
+                <div>
+                    <h3>
+                        <i data-lucide="zap"></i>
+                        Acesso rápido
+                    </h3>
 
-    <!-- =========================================
-         ACESSO RÁPIDO
-    ========================================== -->
-
-    <section class="content-card">
-
-
-        <div class="section-header">
-
-            <div>
-
-                <h3>
-
-                    <i data-lucide="zap"></i>
-
-                    Acesso rápido
-
-                </h3>
-
-                <p>
-
-                    Acesse outras áreas do seu
-                    painel escolar.
-
-                </p>
+                    <p>
+                        Acesse outras áreas do seu
+                        painel escolar.
+                    </p>
+                </div>
 
             </div>
 
-        </div>
+            <div class="quick-actions">
 
+                <a
+                    href="{{ url_for('aluno_turma') }}"
+                    class="quick-action"
+                >
+                    <span class="quick-action-icon">
+                        <i data-lucide="graduation-cap"></i>
+                    </span>
 
-        <div class="quick-actions">
+                    <strong>Minha turma</strong>
 
+                    <small>
+                        Ver informações da minha turma
+                    </small>
+                </a>
 
-            <a
-                href="{{ url_for('aluno_turma') }}"
-                class="quick-action"
-            >
+                <a
+                    href="{{ url_for('aluno_professores') }}"
+                    class="quick-action"
+                >
+                    <span class="quick-action-icon">
+                        <i data-lucide="presentation"></i>
+                    </span>
 
-                <span class="quick-action-icon">
+                    <strong>Professores</strong>
 
+                    <small>
+                        Ver professores da minha turma
+                    </small>
+                </a>
+
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="quick-action"
+                >
+                    <span class="quick-action-icon">
+                        <i data-lucide="message-circle"></i>
+                    </span>
+
+                    <strong>Comunicação</strong>
+
+                    <small>
+                        Conversar com seus professores
+                    </small>
+                </a>
+
+            </div>
+
+        </section>
+
+        <!-- BOTÕES DE NAVEGAÇÃO -->
+        <section class="content-card">
+
+            <div class="form-buttons">
+
+                <a
+                    href="{{ url_for('aluno') }}"
+                    class="btn-login"
+                >
+                    <i data-lucide="house"></i>
+                    Voltar ao meu painel
+                </a>
+
+                <a
+                    href="{{ url_for('aluno_turma') }}"
+                    class="btn-login"
+                >
                     <i data-lucide="graduation-cap"></i>
-
-                </span>
-
-
-                <strong>
-
                     Minha turma
+                </a>
 
-                </strong>
-
-
-                <small>
-
-                    Ver informações da minha turma
-
-                </small>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('aluno_professores') }}"
-                class="quick-action"
-            >
-
-                <span class="quick-action-icon">
-
-                    <i data-lucide="presentation"></i>
-
-                </span>
-
-
-                <strong>
-
-                    Professores
-
-                </strong>
-
-
-                <small>
-
-                    Ver professores da minha turma
-
-                </small>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="quick-action"
-            >
-
-                <span class="quick-action-icon">
-
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="btn-secondary"
+                >
                     <i data-lucide="message-circle"></i>
-
-                </span>
-
-
-                <strong>
-
                     Comunicação
+                </a>
 
-                </strong>
+            </div>
 
+        </section>
 
-                <small>
+    </main>
 
-                    Conversar com seus professores
-
-                </small>
-
-            </a>
-
-
-        </div>
-
-
-    </section>
-
-
-    <!-- =========================================
-         BOTÕES
-    ========================================== -->
-
-    <section class="content-card">
-
-
-        <div class="form-buttons">
-
-
-            <a
-                href="{{ url_for('aluno') }}"
-                class="btn-login"
-            >
-
-                <i data-lucide="house"></i>
-
-                Voltar ao meu painel
-
-            </a>
-
-
-            <a
-                href="{{ url_for('aluno_turma') }}"
-                class="btn-login"
-            >
-
-                <i data-lucide="graduation-cap"></i>
-
-                Minha turma
-
-            </a>
-
-
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="btn-secondary"
-            >
-
-                <i data-lucide="message-circle"></i>
-
-                Comunicação
-
-            </a>
-
-
-        </div>
-
-
-    </section>
-
-
-</main>
-
-
-<!-- =========================================
-     ATIVAR ÍCONES LUCIDE
-========================================== -->
-
-<script>
-
-    lucide.createIcons();
-
-</script>
-
+    <!-- ATIVAR ÍCONES LUCIDE -->
+    <script>
+        lucide.createIcons();
+    </script>
 
 </body>
-
 </html>
