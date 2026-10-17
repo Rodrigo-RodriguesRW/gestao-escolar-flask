@@ -1,407 +1,321 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
+    <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<meta charset="UTF-8">
+    <title>Gestão Escolar</title>
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
-<title>Gestão Escolar</title>
-
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}"
->
-
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest"></script>
-
-
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
 
+    <!-- TOPO DO SISTEMA -->
+    <header class="topo">
 
-<!-- =====================================================
-     TOPO DO SISTEMA
-====================================================== -->
+        <!-- LOGO -->
+        <div class="topo-logo">
 
-<header class="topo">
+            <span class="logo-icone">
+                <i data-lucide="school"></i>
+            </span>
 
-    <!-- =================================================
-         LOGO
-    ================================================== -->
-
-    <div class="topo-logo">
-
-        <span class="logo-icone">
-            <i data-lucide="school"></i>
-        </span>
-
-        <div class="logo-texto">
-
-            <strong>ETE</strong>
-
-            <span>Gestão Escolar</span>
+            <div class="logo-texto">
+                <strong>ETE</strong>
+                <span>Gestão Escolar</span>
+            </div>
 
         </div>
 
-    </div>
+        <!-- MENU MOBILE -->
+        <input
+            type="checkbox"
+            id="menu-mobile-toggle"
+            class="menu-mobile-toggle"
+        >
 
+        <label
+            for="menu-mobile-toggle"
+            class="botao-menu-mobile"
+            aria-label="Abrir ou fechar menu"
+        >
+            <i data-lucide="menu"></i>
+        </label>
 
-    <!-- =================================================
-         MENU MOBILE
-    ================================================== -->
+        <!-- MENU PRINCIPAL -->
+        <nav class="menu-principal">
 
-    <input
-        type="checkbox"
-        id="menu-mobile-toggle"
-        class="menu-mobile-toggle"
-    >
-
-    <label
-        for="menu-mobile-toggle"
-        class="botao-menu-mobile"
-        aria-label="Abrir ou fechar menu"
-    >
-
-        <i data-lucide="menu"></i>
-
-    </label>
-
-
-    <!-- =================================================
-         MENU PRINCIPAL
-    ================================================== -->
-
-    <nav class="menu-principal">
-
-
-        <!-- =================================================
-             MENU DA GESTÃO
-        ================================================== -->
-
-        {% if usuario_tipo == "gestao" %}
-
-            <a
-                href="{{ url_for('dashboard') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="house"></i>
-
-                <span>Dashboard</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('usuarios_page') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="users"></i>
-
-                <span>Usuários</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('turmas_page') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="school"></i>
-
-                <span>Turmas</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('avisos_page') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="megaphone"></i>
-
-                <span>Avisos</span>
-
-            </a>
-
+            <!-- NOTIFICAÇÕES GERAIS -->
+            {% set total_notificacoes =
+                notificacoes_mensagens + notificacoes_avisos
+            %}
 
             <a
                 href="{{ url_for('comunicacao') }}"
-                class="menu-item"
+                class="menu-item menu-notificacoes"
+                aria-label="Notificações: {{ total_notificacoes }} pendentes"
+                title="Mensagens e avisos não lidos"
             >
+                <i data-lucide="bell"></i>
+                <span>Notificações</span>
 
-                <i data-lucide="messages-square"></i>
-
-                <span>Comunicação</span>
-
+                {% if total_notificacoes > 0 %}
+                    <span class="contador-notificacao">
+                        {{ total_notificacoes if total_notificacoes < 100 else '99+' }}
+                    </span>
+                {% endif %}
             </a>
 
-        {% endif %}
+            <!-- MENU DA GESTÃO -->
+            {% if usuario_tipo == "gestao" %}
 
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="house"></i>
+                    <span>Dashboard</span>
+                </a>
 
-        <!-- =================================================
-             MENU DO PROFESSOR
-        ================================================== -->
+                <a
+                    href="{{ url_for('usuarios_page') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="users"></i>
+                    <span>Usuários</span>
+                </a>
 
-        {% if usuario_tipo == "professor" %}
+                <a
+                    href="{{ url_for('turmas_page') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="school"></i>
+                    <span>Turmas</span>
+                </a>
 
-            <a
-                href="{{ url_for('professor') }}"
-                class="menu-item"
-            >
+                <a
+                    href="{{ url_for('avisos_page') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="megaphone"></i>
+                    <span>Avisos</span>
 
-                <i data-lucide="house"></i>
+                    {% if notificacoes_avisos > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_avisos if notificacoes_avisos < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
-                <span>Meu Painel</span>
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="messages-square"></i>
+                    <span>Comunicação</span>
 
-            </a>
+                    {% if notificacoes_mensagens > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_mensagens if notificacoes_mensagens < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
+            {% endif %}
 
-            <a
-                href="{{ url_for('professor_turmas') }}"
-                class="menu-item"
-            >
+            <!-- MENU DO PROFESSOR -->
+            {% if usuario_tipo == "professor" %}
 
-                <i data-lucide="school"></i>
+                <a
+                    href="{{ url_for('professor') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="house"></i>
+                    <span>Meu Painel</span>
+                </a>
 
-                <span>Minhas Turmas</span>
+                <a
+                    href="{{ url_for('professor_turmas') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="school"></i>
+                    <span>Minhas Turmas</span>
+                </a>
 
-            </a>
+                <a
+                    href="{{ url_for('meus_alunos') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="graduation-cap"></i>
+                    <span>Meus Alunos</span>
+                </a>
 
+                <a
+                    href="{{ url_for('professor_avisos') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="megaphone"></i>
+                    <span>Avisos</span>
 
-            <a
-                href="{{ url_for('meus_alunos') }}"
-                class="menu-item"
-            >
+                    {% if notificacoes_avisos > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_avisos if notificacoes_avisos < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
-                <i data-lucide="graduation-cap"></i>
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="messages-square"></i>
+                    <span>Comunicação</span>
 
-                <span>Meus Alunos</span>
+                    {% if notificacoes_mensagens > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_mensagens if notificacoes_mensagens < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
-            </a>
+            {% endif %}
 
+            <!-- MENU DO ALUNO -->
+            {% if usuario_tipo == "aluno" %}
 
-            <a
-                href="{{ url_for('professor_avisos') }}"
-                class="menu-item"
-            >
+                <a
+                    href="{{ url_for('aluno') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="house"></i>
+                    <span>Meu Painel</span>
+                </a>
 
-                <i data-lucide="megaphone"></i>
+                <a
+                    href="{{ url_for('aluno_turma') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="school"></i>
+                    <span>Minha Turma</span>
+                </a>
 
-                <span>Avisos</span>
+                <a
+                    href="{{ url_for('aluno_professores') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="presentation"></i>
+                    <span>Professores</span>
+                </a>
 
-            </a>
+                <a
+                    href="{{ url_for('aluno_avisos') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="megaphone"></i>
+                    <span>Avisos</span>
 
+                    {% if notificacoes_avisos > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_avisos if notificacoes_avisos < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="menu-item"
-            >
+                <a
+                    href="{{ url_for('comunicacao') }}"
+                    class="menu-item"
+                >
+                    <i data-lucide="messages-square"></i>
+                    <span>Comunicação</span>
 
-                <i data-lucide="messages-square"></i>
+                    {% if notificacoes_mensagens > 0 %}
+                        <span class="contador-notificacao">
+                            {{ notificacoes_mensagens if notificacoes_mensagens < 100 else '99+' }}
+                        </span>
+                    {% endif %}
+                </a>
 
-                <span>Comunicação</span>
+            {% endif %}
 
-            </a>
+            <!-- PESQUISA -->
+            <div class="menu-pesquisa">
 
-        {% endif %}
+                <input
+                    type="text"
+                    name="pesquisa"
+                    placeholder="Pesquisar..."
+                    aria-label="Pesquisar no sistema"
+                >
 
+                <button
+                    type="button"
+                    title="Pesquisa"
+                >
+                    <i data-lucide="search"></i>
+                </button>
 
-        <!-- =================================================
-             MENU DO ALUNO
-        ================================================== -->
+            </div>
 
-        {% if usuario_tipo == "aluno" %}
-
-            <a
-                href="{{ url_for('aluno') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="house"></i>
-
-                <span>Meu Painel</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('aluno_turma') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="school"></i>
-
-                <span>Minha Turma</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('aluno_professores') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="presentation"></i>
-
-                <span>Professores</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('aluno_avisos') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="megaphone"></i>
-
-                <span>Avisos</span>
-
-            </a>
-
-
-            <a
-                href="{{ url_for('comunicacao') }}"
-                class="menu-item"
-            >
-
-                <i data-lucide="messages-square"></i>
-
-                <span>Comunicação</span>
-
-            </a>
-
-        {% endif %}
-
-
-        <!-- =================================================
-             PESQUISA
-        ================================================== -->
-
-        <div class="menu-pesquisa">
-
-            <input
-                type="text"
-                name="pesquisa"
-                placeholder="Pesquisar..."
-                aria-label="Pesquisar no sistema"
-            >
-
+            <!-- TEMA -->
             <button
                 type="button"
-                title="Pesquisa"
+                class="menu-botao"
+                title="Alterar tema"
             >
-
-                <i data-lucide="search"></i>
-
+                <i data-lucide="moon"></i>
+                <span>Tema</span>
             </button>
 
-        </div>
+            <!-- PERFIL -->
+            <a
+                href="{{ url_for('perfil') }}"
+                class="menu-usuario"
+            >
+                <span class="usuario-icone">
+                    <i data-lucide="user"></i>
+                </span>
 
+                <span class="usuario-info">
+                    <strong>{{ usuario_nome }}</strong>
+                    <small>{{ usuario_tipo|capitalize }}</small>
+                </span>
+            </a>
 
-        <!-- =================================================
-             TEMA
-        ================================================== -->
+            <!-- SAIR -->
+            <a
+                href="{{ url_for('logout') }}"
+                class="menu-sair"
+            >
+                <i data-lucide="log-out"></i>
+                <span>Sair</span>
+            </a>
 
-        <button
-            type="button"
-            class="menu-botao"
-            title="Alterar tema"
-        >
+        </nav>
+    </header>
 
-            <i data-lucide="moon"></i>
+    <!-- CONTEÚDO DAS PÁGINAS -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
-            <span>Tema</span>
-
-        </button>
-
-
-        <!-- =================================================
-             PERFIL
-        ================================================== -->
-
-        <a
-            href="{{ url_for('perfil') }}"
-            class="menu-usuario"
-        >
-
-            <span class="usuario-icone">
-
-                <i data-lucide="user"></i>
-
-            </span>
-
-            <span class="usuario-info">
-
-                <strong>
-                    {{ usuario_nome }}
-                </strong>
-
-                <small>
-                    {{ usuario_tipo|capitalize }}
-                </small>
-
-            </span>
-
-        </a>
-
-
-        <!-- =================================================
-             SAIR
-        ================================================== -->
-
-        <a
-            href="{{ url_for('logout') }}"
-            class="menu-sair"
-        >
-
-            <i data-lucide="log-out"></i>
-
-            <span>Sair</span>
-
-        </a>
-
-
-    </nav>
-
-</header>
-
-
-<!-- =====================================================
-     CONTEÚDO DAS PÁGINAS
-====================================================== -->
-
-<main>
-
-    {% block content %}
-
-    {% endblock %}
-
-</main>
-
-
-<!-- =====================================================
-     ATIVAR ÍCONES LUCIDE
-====================================================== -->
-
-<script>
-    lucide.createIcons();
-</script>
-
+    <!-- ATIVAR ÍCONES LUCIDE -->
+    <script>
+        lucide.createIcons();
+    </script>
 
 </body>
-
 </html>

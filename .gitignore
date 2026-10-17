@@ -1,3 +1,6 @@
 .venv/
 __pycache__/
 *.pyc
+
+# Backup local do banco
+gestao_escolar_backup.db
